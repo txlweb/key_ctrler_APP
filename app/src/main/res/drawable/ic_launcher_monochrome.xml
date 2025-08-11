@@ -1,0 +1,45 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Monochrome glyph for themed icons (Android 13+) -->
+    <!-- 手机外框（描边，内部留白） -->
+    <path
+        android:fillColor="#99000000"
+        android:fillType="evenOdd"
+        android:pathData="M34,24 L74,24 Q78,24 78,28 L78,80 Q78,84 74,84 L34,84 Q30,84 30,80 L30,28 Q30,24 34,24 Z M36,30 L72,30 L72,78 L36,78 Z" />
+
+    <!-- 侧键按钮（实心-100%不透明） -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M26,36 L30,36 L30,44 L26,44 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M26,48 L30,48 L30,56 L26,56 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M78,40 L82,40 L82,48 L78,48 Z" />
+
+    <!-- 控制图标（实心-100%不透明） -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M44,44 L48,44 L48,48 L44,48 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M52,44 L56,44 L56,48 L52,48 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M60,44 L64,44 L64,48 L60,48 Z" />
+
+    <!-- 连接线（实心-100%不透明） -->
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M28,39 L44,45 L44,47 L28,41 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M28,51 L52,45 L52,47 L28,53 Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M80,43 L64,45 L64,47 L80,45 Z" />
+</vector>

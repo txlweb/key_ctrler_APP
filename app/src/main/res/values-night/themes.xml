@@ -1,0 +1,39 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme with Material You support for dark mode -->
+    <style name="Theme.Kctrl控制器" parent="Theme.Material3.DynamicColors.DayNight">
+        <!-- 隐藏 ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        
+        <!-- Material You 动态颜色会自动应用深色模式 -->
+        <!-- 如果系统不支持动态颜色，则使用以下备用颜色 -->
+        <item name="colorPrimary">@color/dynamic_primary_dark</item>
+        <item name="colorOnPrimary">@color/dynamic_on_primary_dark</item>
+        <item name="colorPrimaryContainer">@color/dynamic_primary_container_dark</item>
+        <item name="colorOnPrimaryContainer">@color/dynamic_on_primary_container_dark</item>
+        
+        <item name="colorSecondary">@color/dynamic_secondary_dark</item>
+        <item name="colorOnSecondary">@color/dynamic_on_secondary_dark</item>
+        <item name="colorSecondaryContainer">@color/dynamic_secondary_container_dark</item>
+        <item name="colorOnSecondaryContainer">@color/dynamic_on_secondary_container_dark</item>
+        
+        <item name="colorSurface">@color/dynamic_surface_dark</item>
+        <item name="colorOnSurface">@color/dynamic_on_surface_dark</item>
+        <item name="colorSurfaceVariant">@color/dynamic_surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/dynamic_on_surface_variant_dark</item>
+        
+        <!-- 状态栏颜色 -->
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        
+        <!-- 导航栏颜色 -->
+        <item name="android:navigationBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        
+        <!-- 启用边到边显示 -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+</resources>

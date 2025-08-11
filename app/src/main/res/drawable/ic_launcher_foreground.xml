@@ -1,0 +1,54 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 侧键控制器图标 - 手机轮廓 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,24 L74,24 Q78,24 78,28 L78,80 Q78,84 74,84 L34,84 Q30,84 30,80 L30,28 Q30,24 34,24 Z" />
+    
+    <!-- 侧键按钮 -->
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M26,36 L30,36 L30,44 L26,44 Z" />
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M26,48 L30,48 L30,56 L26,56 Z" />
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M78,40 L82,40 L82,48 L78,48 Z" />
+    
+    <!-- 屏幕区域 -->
+    <path
+        android:fillColor="#1F2937"
+        android:pathData="M36,32 L72,32 L72,76 L36,76 Z" />
+    
+    <!-- 控制图标 -->
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M44,44 L48,44 L48,48 L44,48 Z" />
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M52,44 L56,44 L56,48 L52,48 Z" />
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M60,44 L64,44 L64,48 L60,48 Z" />
+    
+    <!-- 连接线 -->
+    <path
+        android:fillColor="#DC2626"
+        android:strokeWidth="1"
+        android:strokeColor="#DC2626"
+        android:pathData="M28,40 L44,46" />
+    <path
+        android:fillColor="#DC2626"
+        android:strokeWidth="1"
+        android:strokeColor="#DC2626"
+        android:pathData="M28,52 L52,46" />
+    <path
+        android:fillColor="#DC2626"
+        android:strokeWidth="1"
+        android:strokeColor="#DC2626"
+        android:pathData="M80,44 L64,46" />
+</vector>

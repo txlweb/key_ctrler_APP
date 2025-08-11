@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 原有颜色 -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- 莫奈取色和Material You颜色 -->
+    <!-- 状态相关颜色 -->
+    <color name="status_active">#FF4CAF50</color>
+    <color name="status_inactive">#FFFF9800</color>
+    <color name="status_error">#FFF44336</color>
+    
+    <!-- 卡片背景颜色 -->
+    <color name="status_card_bg">#FFF3E5F5</color>
+    <color name="function_card_bg">#FFE8F5E8</color>
+    <color name="module_card_bg">#FFE3F2FD</color>
+    
+    <!-- 状态徽章颜色 -->
+    <color name="status_badge_bg">#FFE8F5E8</color>
+    <color name="status_badge_border">#FF4CAF50</color>
+    
+    <!-- 动态颜色占位符（会被系统动态颜色覆盖） -->
+    <!-- 浅色模式 -->
+    <color name="dynamic_primary">#FF6750A4</color>
+    <color name="dynamic_on_primary">#FFFFFFFF</color>
+    <color name="dynamic_primary_container">#FFEADDFF</color>
+    <color name="dynamic_on_primary_container">#FF21005D</color>
+    
+    <color name="dynamic_secondary">#FF625B71</color>
+    <color name="dynamic_on_secondary">#FFFFFFFF</color>
+    <color name="dynamic_secondary_container">#FFE8DEF8</color>
+    <color name="dynamic_on_secondary_container">#FF1D192B</color>
+    
+    <color name="dynamic_surface">#FFFEF7FF</color>
+    <color name="dynamic_on_surface">#FF1C1B1F</color>
+    <color name="dynamic_surface_variant">#FFE7E0EC</color>
+    <color name="dynamic_on_surface_variant">#FF49454F</color>
+    
+    <!-- 深色模式 -->
+    <color name="dynamic_primary_dark">#FFD0BCFF</color>
+    <color name="dynamic_on_primary_dark">#FF381E72</color>
+    <color name="dynamic_primary_container_dark">#FF4F378B</color>
+    <color name="dynamic_on_primary_container_dark">#FFEADDFF</color>
+    
+    <color name="dynamic_secondary_dark">#FFCCC2DC</color>
+    <color name="dynamic_on_secondary_dark">#FF332D41</color>
+    <color name="dynamic_secondary_container_dark">#FF4A4458</color>
+    <color name="dynamic_on_secondary_container_dark">#FFE8DEF8</color>
+    
+    <color name="dynamic_surface_dark">#FF1C1B1F</color>
+    <color name="dynamic_on_surface_dark">#FFE6E1E5</color>
+    <color name="dynamic_surface_variant_dark">#FF49454F</color>
+    <color name="dynamic_on_surface_variant_dark">#FFCAC4D0</color>
+</resources>

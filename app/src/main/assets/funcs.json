@@ -1,0 +1,81 @@
+[
+  { "label": "sh头", "command": "#!/bin/bash " },
+  { "label": "获取铃声模式", "command": "am start-foreground-service -n com.idlike.kctrl.mgr/.NoteModeGetter && sleep 0.3 && mode=$(cat /sdcard/Android/data/com.idlike.kctrl.mgr/files/mode.txt) && echo \"$mode\"" },
+
+
+  { "label": "逻辑类", "command": "# 无特殊功能，可以直接删除本行" },
+
+
+  { "label": "如果(", "command": "if " },
+  { "label": "且", "command": " && " },
+  { "label": "或", "command": " || " },
+  { "label": "屏幕亮？", "command": "dumpsys display |grep -q \"Display State=ON\"" },
+  { "label": "静音？", "command": "test \"$mode\" = \"静音\"" },
+  { "label": "响铃？", "command": "test \"$mode\" = \"响铃\"" },
+  { "label": "震动？", "command": "test \"$mode\" = \"震动\"" },
+  { "label": "静音？", "command": "test \"$mode\" = \"勿扰\"" },
+  { "label": "勿扰？", "command": "[ \"$(settings get global zen_mode)\" = \"1\" ]" },
+  { "label": "处于应用？", "command": "dumpsys window | grep -i \"mFocusedWindow\" | head -n1 | awk '{print $3}' | cut -d/ -f1 | grep -q \"^【请在此处写包名】\"" },
+  { "label": "处于界面？", "command": "dumpsys window | grep -i \"mFocusedWindow\" | head -n1 | awk '{print $3}' | cut -d} -f1 | grep -q \"^【请在此处写包名】/【请在此处写Activity全名】\"" },
+  { "label": ")则 [", "command": "; then" },
+  { "label": "] 否则 [", "command": "else" },
+  { "label": "] 闭合if", "command": "fi" },
+
+  { "label": "功能控制类", "command": "# 无特殊功能，可以直接删除本行" },
+
+  { "label": "息屏/开屏", "command": "input keyevent 26" },
+  { "label": "手电开关", "command": "input keyevent 224 && am start-foreground-service -n com.idlike.kctrl.mgr/.TorchToggleService" },
+  { "label": "震动一下", "command": "am startservice -n com.idlike.kctrl.mgr/.VibrationService" },
+  { "label": "播放音效", "command": "am start-foreground-service -n com.idlike.kctrl.mgr/.AudioService" },
+  { "label": "仿灵动岛", "command": "am startservice -n com.idlike.kctrl.mgr/com.idlike.kctrl.mgr.FloatingWindowService -a action_show --es extra_text \"仿灵动岛\" --ei extra_icon_id 2131165313" },
+
+
+  { "label": "音乐控制类", "command": "# 无特殊功能，可以直接删除本行" },
+
+  { "label": "音乐开关", "command": "input keyevent 85" },
+  { "label": "音乐下", "command": "input keyevent 87" },
+  { "label": "音乐上", "command": "input keyevent 88" },
+
+  { "label": "情景模式控制类", "command": "# 无特殊功能，可以直接删除本行" },
+
+
+  { "label": "勿扰开", "command": "cmd notification set_dnd on" },
+  { "label": "勿扰关", "command": "cmd notification set_dnd off" },
+  { "label": "响铃", "command": "cmd audio set-ringer-mode NORMAL" },
+  { "label": "震动", "command": "cmd audio set-ringer-mode VIBRATE" },
+  { "label": "静音", "command": "cmd audio set-ringer-mode SILENT" },
+
+  { "label": "收付款类", "command": "# 无特殊功能，可以直接删除本行" },
+
+
+  { "label": "微信付款码", "command": "su -c \"am start -n com.tencent.mm/.plugin.offline.ui.WalletOfflineEntranceUI\"" },
+  { "label": "微信收款码", "command": "su -c \"am start -n com.tencent.mm/.plugin.collect.ui.CollectMainUI\"" },
+  { "label": "支付宝付款码", "command": "su -c \"am start -a android.intent.action.VIEW -d alipayqr://platformapi/startapp?saId=20000056\"" },
+
+  { "label": "启动游戏类", "command": "# 无特殊功能，可以直接删除本行" },
+
+  { "label": "原神，启动！", "command": "am start -n com.miHoYo.Yuanshen/com.miHoYo.GetMobileInfo.MainActivity" },
+  { "label": "崩铁，启动！", "command": "am start -n com.miHoYo.hkrpg/com.mihoyo.sdk.hoyolink.protocol.HoYoLinkProtocolActivity" },
+  { "label": "崩三，启动！", "command": "am start -n com.miHoYo.enterprise.NGHSoD/com.miHoYo.overridenativeactivity.OverrideNativeActivity" },
+  { "label": "王者，启动！", "command": "am start -n com.tencent.tmgp.sgame/com.tencent.tmgp.sgame.KwaiRouterActivity" },
+  { "label": "和平，启动！", "command": "am start -n com.tencent.tmgp.pubgmhd/com.epicgames.ue4.SplashActivity" },
+  { "label": "使命，启动！", "command": "am start -n com.tencent.tmgp.cod/com.kwai.opensdk.sdk.openapi.KwaiRouterActivity" },
+  { "label": "舟，启动！", "command": "am start -n com.hypergryph.arknights/com.u8.sdk.U8UnityContext" },
+
+  { "label": "系统功能类", "command": "# 无特殊功能，可以直接删除本行" },
+
+  { "label": "小布记忆", "command": "am start-foreground-service -p \"com.coloros.colordirectservice\" --ei \"triggerType\" 1" },
+  { "label": "小布助手", "command": "am start -n com.heytap.speechassist/com.heytap.speechassist.business.lockscreen.FloatSpeechActivity" },
+  { "label": "关机/重启", "command": "su -c \"am broadcast -a SYSTEM_ACTION_POWER_DIALOG\"" },
+  { "label": "录音开", "command": "am start -n com.coloros.soundrecorder/oplus.multimedia.soundrecorder.slidebar.TransparentActivity" },
+  { "label": "模拟点击", "command": "input tap 【x】 【y】" },
+
+  { "label": "打开相机", "command": "am start -n com.oplus.camera/com.oplus.camera.component.CameraImageActivity" },
+  { "label": "打开通知栏", "command": "cmd statusbar expand-notifications" },
+  { "label": "截屏", "command": "input keyevent 120" },
+  { "label": "录音开", "command": "am start -n com.coloros.soundrecorder/oplus.multimedia.soundrecorder.slidebar.TransparentActivity" },
+
+  { "label": "功能组合", "command": "# 无特殊功能，可以直接删除本行" },
+  { "label": "[响铃->震动->静音->勿扰]", "command": "am start-foreground-service -n com.idlike.kctrl.mgr/.NoteModeGetter\nsleep 0.3\nmode=$(cat /sdcard/Android/data/com.idlike.kctrl.mgr/files/mode.txt)\nif [ \"$mode\" = \"响铃\" ]; then\n  cmd audio set-ringer-mode VIBRATE\nelif [ \"$mode\" = \"震动\" ]; then\n  cmd audio set-ringer-mode SILENT\nelif [ \"$mode\" = \"静音\" ]; then\n  cmd notification set_dnd on\nelif [ \"$mode\" = \"勿扰\" ]; then\n  cmd audio set-ringer-mode NORMAL\n  cmd notification set_dnd off\nfi" }
+
+]

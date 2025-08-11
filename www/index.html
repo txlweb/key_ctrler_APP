@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧键控制器 - 官方网站</title>
+    <link rel="icon" type="image/svg+xml" href="app-icon.svg">
+    <link rel="apple-touch-icon" href="app-icon.svg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: rgba(220, 38, 38, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid #dc2626;
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #dc2626;
+        }
+
+        .hero {
+            padding: 100px 0;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(220, 38, 38, 0.1) 0%, transparent 70%);
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #cccccc;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .section {
+            padding: 80px 0;
+        }
+
+        .section h3 {
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #dc2626;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: #dc2626;
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #dc2626, #ef4444);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+        }
+
+        .feature-card h4 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            color: #cccccc;
+            line-height: 1.6;
+        }
+
+        .usage-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid #dc2626;
+            border-radius: 10px;
+            padding: 25px;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #dc2626;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .step h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffffff;
+        }
+
+        .step p {
+            color: #cccccc;
+        }
+
+        .download-section {
+            background: rgba(220, 38, 38, 0.1);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            margin: 50px 0;
+        }
+
+        .qq-group {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #dc2626;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .qq-group:hover {
+            background: rgba(220, 38, 38, 0.2);
+            transform: scale(1.05);
+        }
+
+        .qq-group h4 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #dc2626;
+        }
+
+        .qq-group p {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.5);
+            border-top: 1px solid rgba(220, 38, 38, 0.3);
+            padding: 40px 0;
+            text-align: center;
+            color: #cccccc;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            nav ul {
+                gap: 20px;
+            }
+
+            .hero h2 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section h3 {
+                font-size: 28px;
+            }
+
+            .download-section {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="app-icon.svg" alt="侧键控制器" style="width: 50px; height: 50px; border-radius: 12px;">
+                    <h1>侧键控制器</h1>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#intro">介绍</a></li>
+                        <li><a href="#usage">使用说明</a></li>
+                        <li><a href="#download">下载</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>强大的Android侧键控制工具</h2>
+                <p>让您的Android设备侧键发挥更大作用，支持自定义按键功能，提升操作效率</p>
+                <a href="#download" class="cta-button">立即下载</a>
+            </div>
+        </section>
+
+        <section id="intro" class="section">
+            <div class="container">
+                <h3>应用介绍</h3>
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h4>高性能控制</h4>
+                        <p>基于驱动的底层控制，响应速度快，功能强大稳定</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🎯</div>
+                        <h4>精准定制</h4>
+                        <p>支持多种按键，可自定义各种快捷操作和系统功能</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔧</div>
+                        <h4>简单易用</h4>
+                        <p>直观的用户界面，简单的配置流程，轻松上手使用</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🛡️</div>
+                        <h4>安全可靠</h4>
+                        <p>开源透明，无广告无后门，保护您的隐私和设备安全</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📱</div>
+                        <h4>广泛兼容</h4>
+                        <p>支持多种Android设备和系统版本，适配性强</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔄</div>
+                        <h4>持续更新</h4>
+                        <p>定期更新功能和修复问题，持续优化用户体验</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="usage" class="section">
+            <div class="container">
+                <h3>使用说明</h3>
+                <div class="usage-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h4>获取Root权限</h4>
+                        <p>确保您的Android设备已获取Root权限，这是应用正常工作的前提条件</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h4>安装模块</h4>
+                        <p>在Magisk或KernelSU等Root管理器中安装侧键控制器模块，并重启设备</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h4>安装应用</h4>
+                        <p>下载并安装侧键控制器APK文件，首次启动时授予Root权限</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h4>配置按键</h4>
+                        <p>在按键页面设置您需要的按键功能，支持单击、长按等多种操作</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <h4>启用服务</h4>
+                        <p>在状态页面启用侧键控制服务，确保功能正常运行</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <h4>开始使用</h4>
+                        <p>配置完成后即可使用自定义的侧键功能，享受便捷的操作体验</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="download" class="section">
+            <div class="container">
+                <h3>下载途径</h3>
+                <div class="download-section">
+
+                     <div style="margin-top: 30px; padding: 20px; background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 10px;">
+                        <h5 style="color: #dc2626; margin-bottom: 15px; font-size: 18px;">📦 直接下载</h5>
+                        <a href="/kctrl/kctrl.zip" class="download-btn" style="display: inline-block; padding: 12px 24px; background: linear-gradient(135deg, #dc2626, #b91c1c); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(220, 38, 38, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(220, 38, 38, 0.3)'">
+                            ⬇️ 下载 kctrl.zip
+                        </a>
+                        <p style="margin-top: 10px; font-size: 14px; color: #999;">点击直接下载模块安装包</p>
+                    </div>
+
+                    <h4 style="font-size: 24px; margin-bottom: 20px; color: #dc2626;">加入官方QQ群获取最新测试版本</h4>
+                    <p style="font-size: 18px; margin-bottom: 30px; color: #cccccc;">在群内可以获取最新测试版本，以及技术支持和使用交流</p>
+                    
+                    <a href="https://qm.qq.com/q/50K8RrHlXq" class="qq-group" target="_blank">
+                        <h4>侧键控制器 官方交流群</h4>
+                        <p>群号: 764576035</p>
+                        <p style="color: #dc2626; font-weight: 600;">点击加入群聊</p>
+                    </a>
+                    
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+                        <h5 style="color: #dc2626; margin-bottom: 10px;">群内服务：</h5>
+                        <ul style="text-align: left; display: inline-block; color: #cccccc;">
+                            <li>📱 最新版本APK下载</li>
+                            <li>🛠️ 技术支持和问题解答</li>
+                            <li>💬 用户交流和使用心得</li>
+                            <li>🔔 版本更新通知</li>
+                            <li>📋 使用教程和配置分享</li>
+                        </ul>
+                    </div>
+                    
+                   
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 侧键控制器. 保留所有权利.</p>
+            <p style="margin-top: 10px; color: #999;">本应用为开源项目，仅供学习和个人使用</p>
+        </div>
+    </footer>
+
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 添加滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(220, 38, 38, 0.2)';
+            } else {
+                header.style.background = 'rgba(220, 38, 38, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>

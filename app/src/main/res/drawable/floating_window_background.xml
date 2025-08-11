@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    
+    <!-- 仿灵动岛的黑色背景 -->
+    <solid android:color="#E6000000" />
+    
+    <!-- 圆角设计，类似灵动岛 -->
+    <corners android:radius="16dp" />
+    
+    <!-- 添加描边效果 -->
+    <stroke
+        android:width="0.5dp"
+        android:color="#22FFFFFF" />
+    
+</shape>

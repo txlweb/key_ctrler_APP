@@ -1,0 +1,121 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 渐变定义 -->
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="shadowGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#991b1b;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#7f1d1d;stop-opacity:0.9" />
+    </linearGradient>
+    
+    <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f3f4f6;stop-opacity:0.8" />
+    </linearGradient>
+    
+    <!-- 阴影滤镜 -->
+    <filter id="dropShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="4" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.3"/>
+    </filter>
+    
+    <filter id="innerShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="240" fill="url(#mainGradient)" filter="url(#dropShadow)"/>
+  
+  <!-- 内层圆形边框 -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#shadowGradient)" stroke-width="4" opacity="0.6"/>
+  
+  <!-- 手机轮廓 -->
+  <rect x="180" y="120" width="152" height="272" rx="24" ry="24" 
+        fill="url(#shadowGradient)" filter="url(#innerShadow)"/>
+  
+  <!-- 手机屏幕 -->
+  <rect x="192" y="140" width="128" height="232" rx="12" ry="12" 
+        fill="#1f2937" stroke="#374151" stroke-width="2"/>
+  
+  <!-- 屏幕内容线条 -->
+  <rect x="208" y="160" width="96" height="4" rx="2" fill="#6b7280" opacity="0.6"/>
+  <rect x="208" y="180" width="80" height="4" rx="2" fill="#6b7280" opacity="0.4"/>
+  <rect x="208" y="200" width="88" height="4" rx="2" fill="#6b7280" opacity="0.5"/>
+  
+  <!-- 侧键组 - 左侧 -->
+  <g transform="translate(140, 180)">
+    <!-- 音量键上 -->
+    <rect x="0" y="0" width="32" height="48" rx="16" ry="16" 
+          fill="url(#buttonGradient)" filter="url(#innerShadow)"/>
+    <rect x="4" y="4" width="24" height="40" rx="12" ry="12" 
+          fill="none" stroke="url(#shadowGradient)" stroke-width="2" opacity="0.3"/>
+    
+    <!-- 音量键下 -->
+    <rect x="0" y="60" width="32" height="48" rx="16" ry="16" 
+          fill="url(#buttonGradient)" filter="url(#innerShadow)"/>
+    <rect x="4" y="64" width="24" height="40" rx="12" ry="12" 
+          fill="none" stroke="url(#shadowGradient)" stroke-width="2" opacity="0.3"/>
+  </g>
+  
+  <!-- 侧键组 - 右侧 -->
+  <g transform="translate(340, 200)">
+    <!-- 电源键 -->
+    <rect x="0" y="0" width="32" height="64" rx="16" ry="16" 
+          fill="url(#buttonGradient)" filter="url(#innerShadow)"/>
+    <rect x="4" y="4" width="24" height="56" rx="12" ry="12" 
+          fill="none" stroke="url(#shadowGradient)" stroke-width="2" opacity="0.3"/>
+  </g>
+  
+  <!-- 控制符号 - 中心 -->
+  <g transform="translate(256, 256)">
+    <!-- 控制环 -->
+    <circle cx="0" cy="0" r="45" fill="none" stroke="url(#buttonGradient)" 
+            stroke-width="6" opacity="0.8"/>
+    
+    <!-- 方向箭头 -->
+    <g stroke="url(#buttonGradient)" stroke-width="4" fill="none" stroke-linecap="round">
+      <!-- 上箭头 -->
+      <path d="M -12,-20 L 0,-32 L 12,-20" opacity="0.9"/>
+      <!-- 下箭头 -->
+      <path d="M -12,20 L 0,32 L 12,20" opacity="0.9"/>
+      <!-- 左箭头 -->
+      <path d="M -20,-12 L -32,0 L -20,12" opacity="0.9"/>
+      <!-- 右箭头 -->
+      <path d="M 20,-12 L 32,0 L 20,12" opacity="0.9"/>
+    </g>
+    
+    <!-- 中心点 -->
+    <circle cx="0" cy="0" r="8" fill="url(#buttonGradient)" opacity="0.8"/>
+    <circle cx="0" cy="0" r="4" fill="url(#mainGradient)"/>
+  </g>
+  
+  <!-- 功能指示器 -->
+  <g transform="translate(256, 380)">
+    <!-- 底部功能条 -->
+    <rect x="-40" y="0" width="80" height="8" rx="4" 
+          fill="url(#buttonGradient)" opacity="0.6"/>
+    
+    <!-- 功能点 -->
+    <circle cx="-24" cy="4" r="3" fill="url(#mainGradient)" opacity="0.8"/>
+    <circle cx="-8" cy="4" r="3" fill="url(#mainGradient)" opacity="0.6"/>
+    <circle cx="8" cy="4" r="3" fill="url(#mainGradient)" opacity="0.4"/>
+    <circle cx="24" cy="4" r="3" fill="url(#mainGradient)" opacity="0.8"/>
+  </g>
+  
+  <!-- 顶部装饰 -->
+  <g transform="translate(256, 140)">
+    <!-- 信号指示 -->
+    <rect x="-30" y="0" width="8" height="12" rx="2" fill="url(#buttonGradient)" opacity="0.4"/>
+    <rect x="-15" y="0" width="8" height="16" rx="2" fill="url(#buttonGradient)" opacity="0.6"/>
+    <rect x="0" y="0" width="8" height="20" rx="2" fill="url(#buttonGradient)" opacity="0.8"/>
+    <rect x="15" y="0" width="8" height="14" rx="2" fill="url(#buttonGradient)" opacity="0.5"/>
+    <rect x="30" y="0" width="8" height="18" rx="2" fill="url(#buttonGradient)" opacity="0.7"/>
+  </g>
+  
+  <!-- 外圈装饰 -->
+  <circle cx="256" cy="256" r="250" fill="none" stroke="url(#mainGradient)" 
+          stroke-width="2" opacity="0.3" stroke-dasharray="8,4"/>
+</svg>

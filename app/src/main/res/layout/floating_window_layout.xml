@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="160dp"
+    android:layout_height="32dp"
+    android:background="@drawable/floating_window_background"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:elevation="12dp">
+
+    <!-- 左侧图标 -->
+    <ImageView
+        android:id="@+id/iv_floating_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/ic_config"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="悬浮窗图标" />
+
+    <!-- 右侧文字 -->
+    <TextView
+        android:id="@+id/tv_floating_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:text="悬浮窗"
+        android:textColor="@android:color/white"
+        android:textSize="11sp"
+        android:maxLines="1"
+        android:ellipsize="end" />
+
+    <!-- 中间摄像头区域占位 -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true" />
+
+</RelativeLayout>
