@@ -73,6 +73,7 @@
   { "label": "打开相机", "command": "am start -n com.oplus.camera/com.oplus.camera.component.CameraImageActivity" },
   { "label": "打开通知栏", "command": "cmd statusbar expand-notifications" },
   { "label": "截屏", "command": "input keyevent 120" },
+  { "label": "截屏(无显示)", "command": "screencap -p /sdcard/Pictures/screenshot_$(date +%Y%m%d_%H%M%S).png" },
   { "label": "录音开", "command": "am start -n com.coloros.soundrecorder/oplus.multimedia.soundrecorder.slidebar.TransparentActivity" },
 
   { "label": "功能组合", "command": "# 无特殊功能，可以直接删除本行" },

@@ -11,8 +11,8 @@ android {
         applicationId = "com.idlike.kctrl.mgr"
         minSdk = 29  // Android 10 (API 29)
         targetSdk = 35  // Android 15 (API 35)
-        versionCode = 10010
-        versionName = "1.1"
+        versionCode = 10020
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         

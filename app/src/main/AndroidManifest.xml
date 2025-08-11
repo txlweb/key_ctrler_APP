@@ -85,6 +85,13 @@
             android:foregroundServiceType="specialUse"
             tools:ignore="ForegroundServicePermission" />
         
+        <service
+            android:name=".AudioService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="specialUse"
+            tools:ignore="ForegroundServicePermission" />
+        
     </application>
 
 </manifest>

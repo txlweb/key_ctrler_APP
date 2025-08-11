@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         checkSuPermission()
         checkServiceStatus()
         setupViewPager()
-        
+
         // 检查悬浮窗权限
         FloatingWindowManager.requestOverlayPermission(this)
     }
@@ -474,6 +474,18 @@ class MainActivity : AppCompatActivity() {
             }
         } catch (e: Exception) {
             callback(false)
+        }
+    }
+    
+    /**
+     * 启动音频服务播放启动音效
+     */
+    private fun startAudioService() {
+        try {
+            val intent = Intent(this, AudioService::class.java)
+            startForegroundService(intent)
+        } catch (e: Exception) {
+            // 忽略启动音频服务的错误，不影响主要功能
         }
     }
 }

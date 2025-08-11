@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import android.widget.TextView
+import android.widget.LinearLayout
+import android.widget.CheckBox
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
@@ -32,6 +35,9 @@ class ModuleFragment : Fragment() {
     private lateinit var etLongPressThreshold: TextInputEditText
     private lateinit var etDoubleClickInterval: TextInputEditText
     private lateinit var switchEnableLog: Switch
+    private lateinit var llCpuCheckboxes: LinearLayout
+    private lateinit var tvCpuCoresInfo: TextView
+    private val cpuCheckBoxes = mutableListOf<CheckBox>()
     private lateinit var btnImportConfig: MaterialButton
     private lateinit var btnExportConfig: MaterialButton
     // 保存和加载按钮已移除，配置现在会自动保存并立即生效
@@ -178,8 +184,78 @@ class ModuleFragment : Fragment() {
         etLongPressThreshold = view.findViewById(R.id.et_long_press_threshold)
         etDoubleClickInterval = view.findViewById(R.id.et_double_click_interval)
         switchEnableLog = view.findViewById(R.id.switch_enable_log)
+        llCpuCheckboxes = view.findViewById(R.id.ll_cpu_checkboxes)
+        tvCpuCoresInfo = view.findViewById(R.id.tv_cpu_cores_info)
         btnImportConfig = view.findViewById(R.id.btn_import_config)
         btnExportConfig = view.findViewById(R.id.btn_export_config)
+        
+        // 获取CPU核心数量并创建CheckBox
+        getCpuCoresCount()
+    }
+
+    private fun getCpuCoresCount() {
+        try {
+            val cpuCores = Runtime.getRuntime().availableProcessors()
+            tvCpuCoresInfo.text = "检测到的CPU核心数: $cpuCores"
+            
+            // 动态创建CheckBox
+            createCpuCheckBoxes(cpuCores)
+        } catch (e: Exception) {
+            tvCpuCoresInfo.text = "无法检测CPU核心数"
+            android.util.Log.e("ModuleFragment", "获取CPU核心数失败", e)
+            // 如果检测失败，默认创建4个CheckBox
+            createCpuCheckBoxes(4)
+        }
+    }
+    
+    private fun createCpuCheckBoxes(cpuCores: Int) {
+        // 清除现有的CheckBox
+        llCpuCheckboxes.removeAllViews()
+        cpuCheckBoxes.clear()
+        
+        // 创建CheckBox，每行显示4个
+        var currentRow: LinearLayout? = null
+        for (i in 0 until cpuCores) {
+            if (i % 4 == 0) {
+                // 创建新行
+                currentRow = LinearLayout(requireContext()).apply {
+                    orientation = LinearLayout.HORIZONTAL
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        bottomMargin = 8
+                    }
+                }
+                llCpuCheckboxes.addView(currentRow)
+            }
+            
+            val checkBox = CheckBox(requireContext()).apply {
+                text = "CPU$i"
+                layoutParams = LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+                )
+                // 默认选中CPU0
+                isChecked = (i == 0)
+                
+                // 添加监听器，实现自动保存并提示重启服务
+                setOnCheckedChangeListener { _, _ ->
+                    if (!isLoadingConfig) {
+                        // 延迟保存，避免频繁保存
+                        view?.removeCallbacks(autoSaveRunnable)
+                        view?.postDelayed(autoSaveRunnable, 500)
+                        
+                        // 提示用户需要重启服务
+                        Toast.makeText(requireContext(), "CPU亲和性配置已修改，需要重启服务才能生效", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            
+            cpuCheckBoxes.add(checkBox)
+            currentRow?.addView(checkBox)
+        }
     }
 
     private fun setupRecyclerView() {
@@ -277,6 +353,9 @@ class ModuleFragment : Fragment() {
                     
                     // 自动保存配置
                     saveConfig()
+                    
+                    // 提示用户需要重启服务
+                    Toast.makeText(requireContext(), "设备配置已修改，需要重启服务才能生效", Toast.LENGTH_SHORT).show()
                 } else {
                     android.util.Log.d("ModuleFragment", "跳过设备选择触发的保存，正在加载配置中")
                 }
@@ -320,6 +399,9 @@ class ModuleFragment : Fragment() {
                     
                     // 自动保存配置
                     saveConfig()
+                    
+                    // 提示用户需要重启服务
+                    Toast.makeText(requireContext(), "设备配置已修改，需要重启服务才能生效", Toast.LENGTH_SHORT).show()
                     
                     // 立即刷新显示
                     rvDevices.post {
@@ -447,13 +529,48 @@ class ModuleFragment : Fragment() {
                 "long_press_threshold" -> etLongPressThreshold.setText(value)
                 "double_click_interval" -> etDoubleClickInterval.setText(value)
                 "enable_log" -> switchEnableLog.isChecked = value == "1"
+                "cpu_affinity" -> {
+                    // 解析CPU亲和性配置，设置对应的CheckBox
+                    setCpuAffinityFromConfig(value)
+                }
             }
         }
         
         // 扫描所有设备并根据配置文件设置选中状态
         scanAllDevices(configuredDevices)
     }
-
+    
+    private fun setCpuAffinityFromConfig(value: String) {
+        try {
+            // 先清除所有CheckBox的选中状态
+            cpuCheckBoxes.forEach { it.isChecked = false }
+            
+            if (value.isNotEmpty()) {
+                // 解析CPU核心列表，支持逗号分隔
+                val cpuCores = value.split(",").map { it.trim().toIntOrNull() }.filterNotNull()
+                
+                // 设置对应CheckBox的选中状态
+                for (cpuCore in cpuCores) {
+                    if (cpuCore >= 0 && cpuCore < cpuCheckBoxes.size) {
+                        cpuCheckBoxes[cpuCore].isChecked = true
+                    }
+                }
+            }
+            
+            // 如果没有任何CheckBox被选中，默认选中CPU0
+            if (cpuCheckBoxes.none { it.isChecked } && cpuCheckBoxes.isNotEmpty()) {
+                cpuCheckBoxes[0].isChecked = true
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ModuleFragment", "解析CPU亲和性配置失败: $value", e)
+            // 出错时默认选中CPU0
+            if (cpuCheckBoxes.isNotEmpty()) {
+                cpuCheckBoxes.forEach { it.isChecked = false }
+                cpuCheckBoxes[0].isChecked = true
+            }
+        }
+    }
+    
     private fun scanAllDevices(configuredDevices: List<String> = emptyList()) {
         val mainActivity = activity as? MainActivity
         
@@ -641,6 +758,7 @@ class ModuleFragment : Fragment() {
         etLongPressThreshold.setText("2000")
         etDoubleClickInterval.setText("300")
         switchEnableLog.isChecked = false
+        // CPU亲和性的默认值在createCpuCheckBoxes方法中处理
     }
 
     private fun saveConfig() {
@@ -709,6 +827,24 @@ class ModuleFragment : Fragment() {
             // 日志配置
             configBuilder.append("# 日志开关配置\n")
             configBuilder.append("enable_log=${if (switchEnableLog.isChecked) "1" else "0"}\n")
+            configBuilder.append("\n")
+            
+            // CPU亲和性配置
+            configBuilder.append("# CPU亲和性配置（可选）\n")
+            configBuilder.append("# 指定程序运行在哪些CPU核心上，用逗号分隔\n")
+            configBuilder.append("# 例如: cpu_affinity=0 表示只使用CPU0\n")
+            configBuilder.append("# 例如: cpu_affinity=0,1 表示使用CPU0和CPU1\n")
+            configBuilder.append("# 例如: cpu_affinity=2,3,4 表示使用CPU2、CPU3和CPU4\n")
+            configBuilder.append("# 如果不配置此项，默认使用CPU0\n")
+            val selectedCpuCores = cpuCheckBoxes.mapIndexedNotNull { index, checkBox ->
+                if (checkBox.isChecked) index else null
+            }
+            val cpuAffinityValue = if (selectedCpuCores.isNotEmpty()) {
+                selectedCpuCores.joinToString(",")
+            } else {
+                "0" // 默认使用CPU0
+            }
+            configBuilder.append("cpu_affinity=$cpuAffinityValue\n")
             
             // 保留现有的按键配置
             if (keyConfigLines.isNotEmpty()) {
