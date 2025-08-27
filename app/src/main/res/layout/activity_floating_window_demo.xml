@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:fitsSystemWindows="true">
 
     <!-- 工具栏 -->
     <com.google.android.material.appbar.MaterialToolbar
@@ -43,7 +44,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="悬浮窗演示"
+                        android:text="悬浮窗演示 + 指令生成"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="?attr/colorOnSurfaceVariant"
@@ -52,7 +53,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="这是一个仿灵动岛样式的悬浮窗演示。您可以自定义文本内容和图标，悬浮窗支持在设置、锁屏和正常情况下显示。"
+                        android:text="这是一个仿灵动岛样式的悬浮窗演示。您可以自定义文本内容和图标，点击命令即可复制。"
                         android:textSize="14sp"
                         android:textColor="?attr/colorOnSurfaceVariant" />
 
@@ -114,7 +115,114 @@
                         android:id="@+id/spinner_icon"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- 自定义图标 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_select_image"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="选择图片"
+                            android:layout_marginEnd="8dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_clear_custom"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="清除自定义"
+                            android:layout_marginStart="8dp"
+                            style="@style/Widget.Material3.Button.OutlinedButton" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/iv_custom_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone" />
+
+                    <!-- 已选择的图片列表 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="已选择的图片"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="8dp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_custom_icons"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginBottom="16dp"
+                        android:visibility="gone" />
+
+                    <!-- 宽度选择 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="悬浮窗宽度"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="8dp" />
+
+                    <Spinner
+                        android:id="@+id/spinner_width"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp" />
+
+                    <!-- X/Y坐标 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="4dp"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_x"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="X坐标"
+                                android:inputType="numberSigned"
+                                android:text="-1" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="4dp"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_y"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Y坐标"
+                                android:inputType="numberSigned"
+                                android:text="-1" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -142,40 +250,40 @@
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="16dp" />
 
-                    <!-- 第一行按钮 -->
-                    <LinearLayout
+                    <!-- 控制按钮 -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_show_custom"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="8dp">
+                        android:layout_marginBottom="8dp"
+                        android:text="显示自定义悬浮窗"
+                        style="@style/Widget.Material3.Button" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_show_custom"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="8dp"
-                            android:text="显示自定义悬浮窗"
-                            style="@style/Widget.Material3.Button" />
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btn_update_floating"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="8dp"
-                            android:text="更新悬浮窗"
-                            style="@style/Widget.Material3.Button.TonalButton" />
-
-                    </LinearLayout>
-
-                    <!-- 第二行按钮 -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_hide_floating"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="隐藏悬浮窗"
                         style="@style/Widget.Material3.Button.OutlinedButton" />
+
+                    <!-- AM命令显示区域 -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:hint="生成的AM命令（点击复制）"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_am_command"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textIsSelectable="true"
+                            android:focusable="false"
+                            android:longClickable="false"
+                            android:textSize="12sp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

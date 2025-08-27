@@ -146,6 +146,32 @@ class ScriptItemAdapter(
             etScriptContent.addTextChangedListener(textWatcher)
             Log.d("ScriptItemAdapter", "TextWatcher已添加到EditText")
             
+            // 设置焦点监听器，只在必要时滚动到可见位置
+            etScriptContent.setOnFocusChangeListener { _, hasFocus ->
+                if (hasFocus) {
+                    val currentPosition = adapterPosition
+                    if (currentPosition != RecyclerView.NO_POSITION) {
+                        // 延迟滚动，确保键盘已经弹出
+                        itemView.postDelayed({
+                            (itemView.parent as? RecyclerView)?.let { recyclerView ->
+                                val layoutManager = recyclerView.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager
+                                layoutManager?.let { lm ->
+                                    // 检查当前项是否已经在可见区域内
+                                    val firstVisible = lm.findFirstVisibleItemPosition()
+                                    val lastVisible = lm.findLastVisibleItemPosition()
+                                    
+                                    // 只有当当前项不在可见范围内时才滚动
+                                    if (currentPosition < firstVisible || currentPosition > lastVisible) {
+                                        val offset = recyclerView.height / 3
+                                        lm.scrollToPositionWithOffset(currentPosition, offset)
+                                    }
+                                }
+                            }
+                        }, 100)
+                    }
+                }
+            }
+            
             // 设置删除按钮点击事件
             btnDelete.setOnClickListener {
                 val currentPosition = adapterPosition

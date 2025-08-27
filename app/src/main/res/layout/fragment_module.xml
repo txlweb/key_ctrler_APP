@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -16,7 +17,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -30,12 +34,16 @@
                     android:text="设备路径配置"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="12dp" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="选择要监听的输入设备（支持多选）\n不要选太多，会增加能耗！建议只选必要的！\n推荐别选择触摸，这会占用大量cpu资源！"
+                    android:text="选择要监听的输入设备（支持多选）\n
+不要选太多，会增加能耗！建议只选必要的！\n
+推荐别选择触摸，这会占用大量cpu资源！\n
+提示：它可以滑动"
                     android:textSize="14sp"
                     android:textColor="?attr/colorOnSurfaceVariant"
                     android:layout_marginBottom="12dp" />
@@ -46,7 +54,13 @@
                     android:id="@+id/rv_devices"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:nestedScrollingEnabled="true" />
+                    android:nestedScrollingEnabled="true"
+                    android:scrollbars="vertical"
+                    android:scrollbarThumbVertical="?attr/colorPrimary"
+                    android:scrollbarTrackVertical="?attr/colorSurfaceVariant"
+                    android:scrollbarSize="8dp"
+                    android:scrollbarFadeDuration="0"
+                    android:scrollbarAlwaysDrawVerticalTrack="true" />
 
             </LinearLayout>
 
@@ -58,7 +72,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -72,63 +89,375 @@
                     android:text="时间配置 (毫秒)"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="12dp" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                <!-- 时间轴滑块配置 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="动作时间轴"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- 时间轴可视化 -->
+                <RelativeLayout
+                    android:id="@+id/timeline_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="?attr/colorSurface"
+                    android:elevation="2dp"
+                    android:padding="8dp">
+
+                    <!-- 时间轴线 -->
+                    <View
+                        android:id="@+id/timeline_line"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_centerVertical="true"
+                        android:background="?attr/colorPrimary" />
+
+                    <!-- 0ms标记 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0ms"
+                        android:textSize="10sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="0dp" />
+
+                    <!-- 5000ms标记 -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5000ms+"
+                        android:textSize="10sp"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="0dp" />
+
+                    <!-- 分段区域背景 -->
+                    <LinearLayout
+                        android:id="@+id/segment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_below="@id/timeline_line"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal">
+
+                        <!-- 点击区域 -->
+                        <View
+                            android:id="@+id/segment_click"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="#4CAF50"
+                            android:alpha="0.7" />
+
+                        <!-- 短按区域 -->
+                        <View
+                            android:id="@+id/segment_short_press"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="#9E9E9E"
+                            android:alpha="0.7" />
+
+                        <!-- 长按区域 -->
+                        <View
+                            android:id="@+id/segment_long_press"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="#F44336"
+                            android:alpha="0.7" />
+
+                        <!-- 超长区域 -->
+                        <View
+                            android:id="@+id/segment_extra"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="#FF9800"
+                            android:alpha="0.7" />
+                    </LinearLayout>
+
+                    <!-- 区域标签 -->
+                    <TextView
+                        android:id="@+id/label_click"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="点击"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:layout_above="@id/segment_container"
+                        android:layout_alignStart="@id/segment_click"
+                        android:layout_alignEnd="@id/segment_click"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        tools:ignore="NotSibling" />
+
+                    <TextView
+                        android:id="@+id/label_short_press"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="短按"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:layout_above="@id/segment_container"
+                        android:layout_alignStart="@id/segment_short_press"
+                        android:layout_alignEnd="@id/segment_short_press"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        tools:ignore="NotSibling" />
+
+                    <TextView
+                        android:id="@+id/label_long_press"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="长按"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:layout_above="@id/segment_container"
+                        android:layout_alignStart="@id/segment_long_press"
+                        android:layout_alignEnd="@id/segment_long_press"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        tools:ignore="NotSibling" />
+
+                    <TextView
+                        android:id="@+id/label_extra"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="超长"
+                        android:textSize="10sp"
+                        android:textColor="#FFFFFF"
+                        android:layout_above="@id/segment_container"
+                        android:layout_alignStart="@id/segment_extra"
+                        android:layout_alignEnd="@id/segment_extra"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        tools:ignore="NotSibling" />
+
+                    <!-- 操作标签 -->
+                    <TextView
+                        android:id="@+id/tv_click_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="点击"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="?attr/colorPrimaryContainer"
+                        android:padding="4dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginTop="8dp" />
+
+                    <TextView
+                        android:id="@+id/tv_short_press_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="短按"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="?attr/colorSecondaryContainer"
+                        android:padding="4dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginTop="8dp" />
+
+                    <TextView
+                        android:id="@+id/tv_long_press_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="长按"
+                        android:textSize="12sp"
+                        android:textColor="?attr/colorOnSurface"
+                        android:background="?attr/colorTertiaryContainer"
+                        android:padding="4dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginTop="8dp" />
+                </RelativeLayout>
+
+                <!-- 点击阈值滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="点击阈值"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_click_threshold"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="点击阈值"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurface" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tv_click_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="100ms"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorPrimary" />
+                    </LinearLayout>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_click"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="100"
+                        android:valueTo="500"
+                        android:stepSize="10"
+                        android:value="100" />
+                </LinearLayout>
+
+                <!-- 短按阈值滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="短按阈值"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_short_press_threshold"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="短按阈值"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurface" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tv_short_press_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1000ms"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorSecondary" />
+                    </LinearLayout>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_short_press"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0"
+                        android:valueTo="2000"
+                        android:stepSize="50"
+                        android:value="1000" />
+                </LinearLayout>
+
+                <!-- 长按阈值滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="长按阈值"
-                    android:layout_marginBottom="8dp">
+                    android:orientation="vertical"
+                    android:layout_marginBottom="16dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_long_press_threshold"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="长按阈值"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurface" />
 
-                <com.google.android.material.textfield.TextInputLayout
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tv_long_press_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="2000ms"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorTertiary" />
+                    </LinearLayout>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_long_press"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="0"
+                        android:valueTo="5000"
+                        android:stepSize="100"
+                        android:value="2000" />
+                </LinearLayout>
+
+                <!-- 双击间隔滑块 -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="双击间隔"
+                    android:orientation="vertical"
                     android:layout_marginBottom="8dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/et_double_click_interval"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="number" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                </com.google.android.material.textfield.TextInputLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="双击间隔"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="0dp"
+                            android:layout_weight="1" />
+
+                        <TextView
+                            android:id="@+id/tv_double_click_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="300ms"
+                            android:textSize="14sp"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/slider_double_click"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:valueFrom="100"
+                        android:valueTo="1000"
+                        android:stepSize="10"
+                        android:value="300" />
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -140,7 +469,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -154,6 +486,7 @@
                     android:text="CPU亲和性配置"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="12dp" />
 
                 <TextView
@@ -189,7 +522,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -203,6 +539,7 @@
                     android:text="日志配置"
                     android:textSize="18sp"
                     android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
                     android:layout_marginBottom="12dp" />
 
                 <LinearLayout
@@ -224,6 +561,15 @@
                         android:layout_height="wrap_content" />
 
                 </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_export_log_config"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="导出日志 - 请手动发送给作者"
+                    app:icon="@android:drawable/ic_menu_save"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
 
             </LinearLayout>
 

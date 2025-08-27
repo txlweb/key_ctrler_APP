@@ -65,12 +65,16 @@ class FloatingWindowManager {
         /**
          * 启动悬浮窗服务
          */
-        fun startFloatingWindow(context: Context, text: String = "悬浮窗", iconId: Int = R.drawable.ic_config) {
+        fun startFloatingWindow(context: Context, text: String = "悬浮窗", iconId: Int = R.drawable.ic_config, widthDp: Int = 160, x: Int = -1, y: Int = -1, customIconPath: String? = null) {
             if (hasOverlayPermission(context)) {
                 val intent = Intent(context, FloatingWindowService::class.java).apply {
                     action = FloatingWindowService.ACTION_SHOW
                     putExtra(FloatingWindowService.EXTRA_TEXT, text)
                     putExtra(FloatingWindowService.EXTRA_ICON_ID, iconId)
+                    putExtra(FloatingWindowService.EXTRA_WIDTH, widthDp)
+                    putExtra(FloatingWindowService.EXTRA_X, x)
+                    putExtra(FloatingWindowService.EXTRA_Y, y)
+                    customIconPath?.let { putExtra(FloatingWindowService.EXTRA_CUSTOM_ICON_PATH, it) }
                 }
                 context.startForegroundService(intent)
             }
@@ -89,12 +93,16 @@ class FloatingWindowManager {
         /**
          * 更新悬浮窗内容
          */
-        fun updateFloatingWindow(context: Context, text: String, iconId: Int = R.drawable.ic_config) {
+        fun updateFloatingWindow(context: Context, text: String, iconId: Int = R.drawable.ic_config, widthDp: Int = 160, x: Int = -1, y: Int = -1, customIconPath: String? = null) {
             if (hasOverlayPermission(context)) {
                 val intent = Intent(context, FloatingWindowService::class.java).apply {
                     action = FloatingWindowService.ACTION_UPDATE
                     putExtra(FloatingWindowService.EXTRA_TEXT, text)
                     putExtra(FloatingWindowService.EXTRA_ICON_ID, iconId)
+                    putExtra(FloatingWindowService.EXTRA_WIDTH, widthDp)
+                    putExtra(FloatingWindowService.EXTRA_X, x)
+                    putExtra(FloatingWindowService.EXTRA_Y, y)
+                    customIconPath?.let { putExtra(FloatingWindowService.EXTRA_CUSTOM_ICON_PATH, it) }
                 }
                 context.startService(intent)
             }

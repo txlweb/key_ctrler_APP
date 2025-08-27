@@ -63,6 +63,7 @@
             android:contentDescription="删除条目"
             app:icon="@drawable/ic_delete"
             app:iconTint="?attr/colorError"
+
             android:layout_marginStart="4dp" />
 
     </LinearLayout>

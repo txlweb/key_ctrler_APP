@@ -8,6 +8,9 @@ import android.widget.Toast
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -37,6 +40,12 @@ class ConfigFragment : Fragment() {
         setupRecyclerView()
         setupSwipeRefresh()
         setupClickListeners()
+        checkServiceAndLoadKeys()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 当fragment重新可见时，重新检查服务状态
         checkServiceAndLoadKeys()
     }
     
@@ -650,9 +659,9 @@ class ConfigFragment : Fragment() {
                 saveKeys()
                 
                 currentConsoleOutputTextView?.append("成功添加按键: $keyName ($keyCode)\n")
-                currentConsoleOutputTextView?.append("可继续添加更多按键...\n")
+                currentConsoleOutputTextView?.append("点击关闭退出...\n")
                 context?.let {
-                        Toast.makeText(it, "已添加按键: $keyName ($keyCode)\n可继续添加更多按键", Toast.LENGTH_LONG).show()
+                        //Toast.makeText(it, "已添加按键: $keyName ($keyCode)\n可继续添加更多按键", Toast.LENGTH_LONG).show()
                     }
             } else {
                 currentConsoleOutputTextView?.append("错误: 无法解析按键信息\n格式: $lastLine\n")
@@ -792,10 +801,10 @@ class ConfigFragment : Fragment() {
         val layoutDoubleClickScript = dialogView.findViewById<android.widget.LinearLayout>(R.id.layoutDoubleClickScript)
         val layoutShortPressScript = dialogView.findViewById<android.widget.LinearLayout>(R.id.layoutShortPressScript)
         val layoutLongPressScript = dialogView.findViewById<android.widget.LinearLayout>(R.id.layoutLongPressScript)
-        val etClickScript = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etClickScript)
-        val etDoubleClickScript = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etDoubleClickScript)
-        val etShortPressScript = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etShortPressScript)
-        val etLongPressScript = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etLongPressScript)
+        val etClickScript = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.etClickScript)
+        val etDoubleClickScript = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.etDoubleClickScript)
+        val etShortPressScript = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.etShortPressScript)
+        val etLongPressScript = dialogView.findViewById<com.google.android.material.textfield.MaterialAutoCompleteTextView>(R.id.etLongPressScript)
         val btnEditClick = dialogView.findViewById<android.widget.ImageButton>(R.id.btnEditClick)
         val btnEditDoubleClick = dialogView.findViewById<android.widget.ImageButton>(R.id.btnEditDoubleClick)
         val btnEditShortPress = dialogView.findViewById<android.widget.ImageButton>(R.id.btnEditShortPress)
@@ -821,41 +830,69 @@ class ConfigFragment : Fragment() {
         updateEventVisibility(layoutShortPressScript, key.shortPressScript.isNotEmpty())
         updateEventVisibility(layoutLongPressScript, key.longPressScript.isNotEmpty())
         
-        // 编辑脚本按钮点击事件
+        // 加载脚本文件列表并设置下拉适配器
+        loadScriptFiles { scriptFiles ->
+            activity?.runOnUiThread {
+                val adapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_dropdown_item_1line,
+                    scriptFiles
+                )
+                
+                etClickScript.setAdapter(adapter)
+                etDoubleClickScript.setAdapter(adapter)
+                etShortPressScript.setAdapter(adapter)
+                etLongPressScript.setAdapter(adapter)
+            }
+        }
+        
+        // 编辑脚本按钮点击事件 - 打开ScriptEditActivity编辑页面
         btnEditClick.setOnClickListener {
-            showScriptEditDialog(key, "click", etClickScript.text.toString()) { newScript ->
-                etClickScript.setText(newScript)
-                if (newScript.isNotEmpty()) {
-                    updateEventVisibility(layoutClickScript, true)
-                }
+            val scriptName = etClickScript.text.toString().trim()
+            val scriptPath = if (scriptName.isEmpty()) {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/click_${key.code}.sh"
+            } else {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/$scriptName"
             }
+            val intent = android.content.Intent(requireContext(), ScriptEditActivity::class.java)
+            intent.putExtra(ScriptEditActivity.EXTRA_SCRIPT_PATH, scriptPath)
+            startActivity(intent)
         }
-        
+
         btnEditDoubleClick.setOnClickListener {
-            showScriptEditDialog(key, "double_click", etDoubleClickScript.text.toString()) { newScript ->
-                etDoubleClickScript.setText(newScript)
-                if (newScript.isNotEmpty()) {
-                    updateEventVisibility(layoutDoubleClickScript, true)
-                }
+            val scriptName = etDoubleClickScript.text.toString().trim()
+            val scriptPath = if (scriptName.isEmpty()) {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/double_click_${key.code}.sh"
+            } else {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/$scriptName"
             }
+            val intent = android.content.Intent(requireContext(), ScriptEditActivity::class.java)
+            intent.putExtra(ScriptEditActivity.EXTRA_SCRIPT_PATH, scriptPath)
+            startActivity(intent)
         }
-        
+
         btnEditShortPress.setOnClickListener {
-            showScriptEditDialog(key, "short_press", etShortPressScript.text.toString()) { newScript ->
-                etShortPressScript.setText(newScript)
-                if (newScript.isNotEmpty()) {
-                    updateEventVisibility(layoutShortPressScript, true)
-                }
+            val scriptName = etShortPressScript.text.toString().trim()
+            val scriptPath = if (scriptName.isEmpty()) {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/short_press_${key.code}.sh"
+            } else {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/$scriptName"
             }
+            val intent = android.content.Intent(requireContext(), ScriptEditActivity::class.java)
+            intent.putExtra(ScriptEditActivity.EXTRA_SCRIPT_PATH, scriptPath)
+            startActivity(intent)
         }
-        
+
         btnEditLongPress.setOnClickListener {
-            showScriptEditDialog(key, "long_press", etLongPressScript.text.toString()) { newScript ->
-                etLongPressScript.setText(newScript)
-                if (newScript.isNotEmpty()) {
-                    updateEventVisibility(layoutLongPressScript, true)
-                }
+            val scriptName = etLongPressScript.text.toString().trim()
+            val scriptPath = if (scriptName.isEmpty()) {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/long_press_${key.code}.sh"
+            } else {
+                "${MainActivity.KCTRL_MODULE_PATH}/scripts/$scriptName"
             }
+            val intent = android.content.Intent(requireContext(), ScriptEditActivity::class.java)
+            intent.putExtra(ScriptEditActivity.EXTRA_SCRIPT_PATH, scriptPath)
+            startActivity(intent)
         }
         
         // 删除事件按钮点击事件
@@ -924,6 +961,29 @@ class ConfigFragment : Fragment() {
         val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setView(dialogView)
             .create()
+        
+        // 设置对话框参数以适配低DPI设备
+        dialog.setOnShowListener {
+            val window = dialog.window
+            window?.let {
+                val displayMetrics = resources.displayMetrics
+                val screenHeight = displayMetrics.heightPixels
+                val screenWidth = displayMetrics.widthPixels
+                
+                // 设置最大高度为屏幕高度的80%，确保在低DPI设备上也能完整显示
+                val maxHeight = (screenHeight * 0.8).toInt()
+                val maxWidth = (screenWidth * 0.9).toInt()
+                
+                val layoutParams = window.attributes
+                layoutParams.height = maxHeight
+                layoutParams.width = maxWidth
+                window.attributes = layoutParams
+                
+                // 确保对话框内容可以滚动
+                dialogView.isFocusable = true
+                dialogView.isFocusableInTouchMode = true
+            }
+        }
         
         btnCancel.setOnClickListener {
             dialog.dismiss()
@@ -1134,13 +1194,48 @@ class ConfigFragment : Fragment() {
      private fun updateEventVisibility(layout: android.widget.LinearLayout, isVisible: Boolean) {
         layout.visibility = if (isVisible) android.view.View.VISIBLE else android.view.View.GONE
     }
+
+    private fun loadScriptFiles(callback: (List<String>) -> Unit) {
+        val mainActivity = activity as? MainActivity ?: return
+        val scriptDir = "${MainActivity.KCTRL_MODULE_PATH}/scripts"
+        
+        // 使用find命令扫描scripts目录下的所有.sh文件
+        val findCommand = "find $scriptDir -name '*.sh' -type f -exec basename {} \\;"
+        
+        mainActivity.executeRootCommandAsync(findCommand) { result ->
+            val scriptFiles = mutableListOf<String>()
+            
+            if (result != null) {
+                // 解析find命令的输出
+                val lines = result.split("\n")
+                lines.forEach { line ->
+                    val trimmed = line.trim()
+                    if (trimmed.isNotEmpty() && trimmed.endsWith(".sh")) {
+                        // 移除.sh后缀并添加到列表
+                        scriptFiles.add(trimmed)
+                    }
+                }
+            }
+            
+            // 如果没有找到脚本文件，添加一个空选项
+            if (scriptFiles.isEmpty()) {
+                scriptFiles.add("")
+            }
+            
+            callback(scriptFiles)
+        }
+    }
+
+
+
+
     
     private fun showAddEventDialog(
         key: KeyItem,
-        etClickScript: com.google.android.material.textfield.TextInputEditText,
-        etDoubleClickScript: com.google.android.material.textfield.TextInputEditText,
-        etShortPressScript: com.google.android.material.textfield.TextInputEditText,
-        etLongPressScript: com.google.android.material.textfield.TextInputEditText,
+        etClickScript: com.google.android.material.textfield.MaterialAutoCompleteTextView,
+        etDoubleClickScript: com.google.android.material.textfield.MaterialAutoCompleteTextView,
+        etShortPressScript: com.google.android.material.textfield.MaterialAutoCompleteTextView,
+        etLongPressScript: com.google.android.material.textfield.MaterialAutoCompleteTextView,
         layoutClickScript: android.widget.LinearLayout,
         layoutDoubleClickScript: android.widget.LinearLayout,
         layoutShortPressScript: android.widget.LinearLayout,
@@ -1258,13 +1353,7 @@ class ConfigFragment : Fragment() {
         }
     }
     
-    private fun showScriptEditDialog(key: KeyItem, eventType: String, currentScript: String, onSave: (String) -> Unit) {
-        // 启动ScriptEditActivity而不是显示弹窗
-        val scriptPath = "${MainActivity.KCTRL_MODULE_PATH}/scripts/${eventType}_${key.code}.sh"
-        val intent = android.content.Intent(requireContext(), ScriptEditActivity::class.java)
-        intent.putExtra(ScriptEditActivity.EXTRA_SCRIPT_PATH, scriptPath)
-        startActivity(intent)
-    }
+
     
     private fun loadScriptContent(key: KeyItem, eventType: String, callback: (String) -> Unit) {
         val mainActivity = activity as? MainActivity ?: return

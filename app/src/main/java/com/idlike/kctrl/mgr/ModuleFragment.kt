@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.Switch
 import android.widget.Toast
+import kotlin.math.max
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +20,7 @@ import android.widget.CheckBox
 import android.content.Intent
 import android.net.Uri
 import android.os.Environment
+import android.widget.RelativeLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
 import androidx.core.content.ContextCompat
@@ -27,19 +30,37 @@ import java.io.FileOutputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
+import kotlin.math.max
 
 class ModuleFragment : Fragment() {
     private lateinit var rvDevices: RecyclerView
-    private lateinit var etClickThreshold: TextInputEditText
-    private lateinit var etShortPressThreshold: TextInputEditText
-    private lateinit var etLongPressThreshold: TextInputEditText
-    private lateinit var etDoubleClickInterval: TextInputEditText
+    private lateinit var sliderClick: com.google.android.material.slider.Slider
+    private lateinit var sliderShortPress: com.google.android.material.slider.Slider
+    private lateinit var sliderLongPress: com.google.android.material.slider.Slider
+    private lateinit var sliderDoubleClick: com.google.android.material.slider.Slider
+    private lateinit var tvClickValue: TextView
+    private lateinit var tvShortPressValue: TextView
+    private lateinit var tvLongPressValue: TextView
+    private lateinit var tvDoubleClickValue: TextView
+    private lateinit var tvClickLabel: TextView
+    private lateinit var tvShortPressLabel: TextView
+    private lateinit var tvLongPressLabel: TextView
+    private lateinit var segmentContainer: LinearLayout
+    private lateinit var segmentClick: View
+    private lateinit var segmentShortPress: View
+    private lateinit var segmentLongPress: View
+    private lateinit var segmentExtra: View
+    private lateinit var labelClick: TextView
+    private lateinit var labelShortPress: TextView
+    private lateinit var labelLongPress: TextView
+    private lateinit var labelExtra: TextView
     private lateinit var switchEnableLog: Switch
     private lateinit var llCpuCheckboxes: LinearLayout
     private lateinit var tvCpuCoresInfo: TextView
     private val cpuCheckBoxes = mutableListOf<CheckBox>()
     private lateinit var btnImportConfig: MaterialButton
     private lateinit var btnExportConfig: MaterialButton
+    private lateinit var btnExportLogConfig: MaterialButton
     // 保存和加载按钮已移除，配置现在会自动保存并立即生效
     private lateinit var deviceAdapter: DeviceAdapter
     private val deviceList = mutableListOf<DeviceItem>()
@@ -48,6 +69,10 @@ class ModuleFragment : Fragment() {
     // 文件选择器
     private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/zip")) { uri ->
         uri?.let { exportConfigToUri(it) }
+    }
+    
+    private val exportLogLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) { uri ->
+        uri?.let { exportLogConfigToUri(it) }
     }
     
     private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -68,12 +93,19 @@ class ModuleFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         
-  
+        // 预先扫描设备，不显示提示
+        scanAllDevicesSilently()
         
         // 检查服务状态并加载配置
         view.post {
             checkServiceAndLoadConfig()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 当fragment重新可见时，重新检查服务状态
+        checkServiceAndLoadConfig()
     }
     
     private fun checkServiceAndLoadConfig() {
@@ -105,10 +137,10 @@ class ModuleFragment : Fragment() {
     
     private fun disableFeatures() {
         rvDevices.alpha = 0.5f
-        etClickThreshold.isEnabled = false
-        etShortPressThreshold.isEnabled = false
-        etLongPressThreshold.isEnabled = false
-        etDoubleClickInterval.isEnabled = false
+        sliderClick.isEnabled = false
+        sliderShortPress.isEnabled = false
+        sliderLongPress.isEnabled = false
+        sliderDoubleClick.isEnabled = false
         switchEnableLog.isEnabled = false
         btnImportConfig.isEnabled = false
         btnExportConfig.isEnabled = false
@@ -116,10 +148,10 @@ class ModuleFragment : Fragment() {
     
     private fun enableFeatures() {
         rvDevices.alpha = 1.0f
-        etClickThreshold.isEnabled = true
-        etShortPressThreshold.isEnabled = true
-        etLongPressThreshold.isEnabled = true
-        etDoubleClickInterval.isEnabled = true
+        sliderClick.isEnabled = true
+        sliderShortPress.isEnabled = true
+        sliderLongPress.isEnabled = true
+        sliderDoubleClick.isEnabled = true
         switchEnableLog.isEnabled = true
         btnImportConfig.isEnabled = true
         btnExportConfig.isEnabled = true
@@ -179,15 +211,35 @@ class ModuleFragment : Fragment() {
 
     private fun initViews(view: View) {
         rvDevices = view.findViewById(R.id.rv_devices)
-        etClickThreshold = view.findViewById(R.id.et_click_threshold)
-        etShortPressThreshold = view.findViewById(R.id.et_short_press_threshold)
-        etLongPressThreshold = view.findViewById(R.id.et_long_press_threshold)
-        etDoubleClickInterval = view.findViewById(R.id.et_double_click_interval)
+        sliderClick = view.findViewById(R.id.slider_click)
+        sliderShortPress = view.findViewById(R.id.slider_short_press)
+        sliderLongPress = view.findViewById(R.id.slider_long_press)
+        sliderDoubleClick = view.findViewById(R.id.slider_double_click)
+        tvClickValue = view.findViewById(R.id.tv_click_value)
+        tvShortPressValue = view.findViewById(R.id.tv_short_press_value)
+        tvLongPressValue = view.findViewById(R.id.tv_long_press_value)
+        tvDoubleClickValue = view.findViewById(R.id.tv_double_click_value)
+        tvClickLabel = view.findViewById(R.id.tv_click_label)
+        tvShortPressLabel = view.findViewById(R.id.tv_short_press_label)
+        tvLongPressLabel = view.findViewById(R.id.tv_long_press_label)
+        segmentContainer = view.findViewById(R.id.segment_container)
+        segmentClick = view.findViewById(R.id.segment_click)
+        segmentShortPress = view.findViewById(R.id.segment_short_press)
+        segmentLongPress = view.findViewById(R.id.segment_long_press)
+        segmentExtra = view.findViewById(R.id.segment_extra)
+        labelClick = view.findViewById(R.id.label_click)
+        labelShortPress = view.findViewById(R.id.label_short_press)
+        labelLongPress = view.findViewById(R.id.label_long_press)
+        labelExtra = view.findViewById(R.id.label_extra)
         switchEnableLog = view.findViewById(R.id.switch_enable_log)
         llCpuCheckboxes = view.findViewById(R.id.ll_cpu_checkboxes)
         tvCpuCoresInfo = view.findViewById(R.id.tv_cpu_cores_info)
         btnImportConfig = view.findViewById(R.id.btn_import_config)
         btnExportConfig = view.findViewById(R.id.btn_export_config)
+        btnExportLogConfig = view.findViewById(R.id.btn_export_log_config)
+        
+        // 初始化滑块值显示
+        updateSliderValueTexts()
         
         // 获取CPU核心数量并创建CheckBox
         getCpuCoresCount()
@@ -417,24 +469,240 @@ class ModuleFragment : Fragment() {
         rvDevices.adapter = deviceAdapter
     }
 
+    private fun updateSliderValueTexts() {
+        tvClickValue.text = "${sliderClick.value.toInt()}ms"
+        tvShortPressValue.text = "${sliderShortPress.value.toInt()}ms"
+        tvLongPressValue.text = "${sliderLongPress.value.toInt()}ms"
+        tvDoubleClickValue.text = "${sliderDoubleClick.value.toInt()}ms"
+        updateTimelineDisplay()
+    }
+
+    private fun updateTimelineDisplay() {
+        // 获取当前滑块值
+        val clickValue = sliderClick.value.toInt()
+        val shortPressValue = sliderShortPress.value.toInt()
+        val longPressValue = sliderLongPress.value.toInt()
+        
+        // 更新标签文本，包含具体数值
+        tvClickLabel.text = "点击\n${clickValue}ms"
+        tvShortPressLabel.text = "短按\n${shortPressValue}ms"
+        tvLongPressLabel.text = "长按\n${longPressValue}ms"
+        
+        // 设置最大时间范围，确保0ms在最左端
+        val maxTimeRange = 5000f
+        
+        // 获取时间轴的实际宽度
+        val timelineLayout = tvClickLabel.parent as? RelativeLayout ?: return
+        
+        // 如果布局还未测量，延迟执行
+        if (timelineLayout.width == 0) {
+            timelineLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    timelineLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    updateTimelineDisplay()
+                }
+            })
+            return
+        }
+        
+        val timelineWidth = timelineLayout.width - timelineLayout.paddingLeft - timelineLayout.paddingRight - 60 // 留出边距
+        
+        // 计算每个标签的左对齐位置（从0ms开始）
+        val clickPosition = if (clickValue > 0 && timelineWidth > 0) (clickValue / maxTimeRange * timelineWidth) else 0f
+        val shortPressPosition = if (shortPressValue > 0 && timelineWidth > 0) (shortPressValue / maxTimeRange * timelineWidth) else 0f
+        val longPressPosition = if (longPressValue > 0 && timelineWidth > 0) (longPressValue / maxTimeRange * timelineWidth) else 0f
+        
+        // 设置标签的可见性和位置
+        tvClickLabel.visibility = if (clickValue > 0) View.VISIBLE else View.GONE
+        tvShortPressLabel.visibility = if (shortPressValue > 0) View.VISIBLE else View.GONE
+        tvLongPressLabel.visibility = if (longPressValue > 0) View.VISIBLE else View.GONE
+        
+        // 使用RelativeLayout的layout_marginStart来设置左对齐位置
+        try {
+            val clickParams = tvClickLabel.layoutParams as RelativeLayout.LayoutParams
+            clickParams.marginStart = max(0, clickPosition.toInt())
+            tvClickLabel.layoutParams = clickParams
+            
+            val shortPressParams = tvShortPressLabel.layoutParams as RelativeLayout.LayoutParams
+            shortPressParams.marginStart = max(0, shortPressPosition.toInt())
+            tvShortPressLabel.layoutParams = shortPressParams
+            
+            val longPressParams = tvLongPressLabel.layoutParams as RelativeLayout.LayoutParams
+            longPressParams.marginStart = max(0, longPressPosition.toInt())
+            tvLongPressLabel.layoutParams = longPressParams
+        } catch (e: Exception) {
+            // 布局参数可能不匹配，使用默认位置
+        }
+        
+        // 更新分段区域的宽度（使用weight比例）
+        if (segmentContainer.width > 0) {
+            // 新逻辑：
+            // - segmentClick 表示 0 -> 点击 的空白（不可见但占位）
+            // - segmentShortPress 表示 点击 -> 短按 的空白（不可见但占位）
+            // - segmentLongPress 表示 短按 -> 长按 的区域（短按）
+            // - segmentExtra 表示 长按 -> 末尾 的区域（长按）
+            val clickSpacerWeight = if (clickValue > 0) max(0f, clickValue / maxTimeRange) else 0f
+            val shortPressSpacerWeight = if (shortPressValue > clickValue) max(0f, (shortPressValue - clickValue) / maxTimeRange) else 0f
+            val shortRegionWeight = if (longPressValue > shortPressValue) max(0f, (longPressValue - shortPressValue) / maxTimeRange) else 0f
+            val longRegionWeight = max(0f, 1.0f - clickSpacerWeight - shortPressSpacerWeight - shortRegionWeight)
+            
+            // 设置每个区域的权重
+            segmentClick.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, clickSpacerWeight)
+            segmentShortPress.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, shortPressSpacerWeight)
+            segmentLongPress.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, shortRegionWeight)
+            segmentExtra.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, longRegionWeight)
+            
+            // 更新区域标签
+            labelClick.text = ""
+            labelShortPress.text = ""
+            labelLongPress.text = if (shortRegionWeight > 0f) "短按" else ""
+            labelExtra.text = if (longRegionWeight > 0f) "长按" else ""
+            
+            // 显示或隐藏区域标签
+            labelClick.visibility = View.VISIBLE
+            labelShortPress.visibility = View.VISIBLE
+            labelLongPress.visibility = if (shortRegionWeight > 0f) View.VISIBLE else View.GONE
+            labelExtra.visibility = if (longRegionWeight > 0f) View.VISIBLE else View.GONE
+            
+            // 显示或隐藏区域
+            segmentClick.visibility = if (clickSpacerWeight > 0f) View.VISIBLE else View.GONE
+            segmentShortPress.visibility = if (shortPressSpacerWeight > 0f) View.VISIBLE else View.GONE
+            segmentLongPress.visibility = if (shortRegionWeight > 0f) View.VISIBLE else View.GONE
+            segmentExtra.visibility = if (longRegionWeight > 0f) View.VISIBLE else View.GONE
+
+        }
+    }
+
     private fun setupClickListeners() {
         // 保存和加载按钮已移除，配置现在会自动保存并立即生效
         
-        // 为输入框添加文本变化监听器，实现自动保存
-        val textWatcher = object : android.text.TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                // 延迟保存，避免用户输入过程中频繁保存
-                rvDevices.removeCallbacks(autoSaveRunnable)
-                rvDevices.postDelayed(autoSaveRunnable, 1000) // 1秒后自动保存
+        // 为滑块添加值变化监听器，实现自动保存和值限制
+        val clickSliderListener = object : com.google.android.material.slider.Slider.OnChangeListener {
+            override fun onValueChange(slider: com.google.android.material.slider.Slider, value: Float, fromUser: Boolean) {
+                if (fromUser && !isLoadingConfig) {
+                    var adjusted = false
+                    val minValue = 100f
+                    val actualValue = maxOf(minValue, value)
+                    
+                    // 确保点击阈值不小于100ms
+                    if (actualValue != value) {
+                        slider.value = actualValue
+                    }
+                    
+                    // 确保短按 > 点击
+                    if (actualValue >= sliderShortPress.value) {
+                        sliderShortPress.value = minOf(actualValue + 100f, sliderShortPress.valueTo)
+                        adjusted = true
+                    }
+                    // 确保双击间隔 > 点击
+                    if (actualValue >= sliderDoubleClick.value) {
+                        sliderDoubleClick.value = minOf(actualValue + 100f, sliderDoubleClick.valueTo)
+                        adjusted = true
+                    }
+                    if (adjusted) {
+                        Toast.makeText(context, "点击阈值已调整相关参数", Toast.LENGTH_SHORT).show()
+                    }
+                    updateSliderValueTexts()
+                    rvDevices.removeCallbacks(autoSaveRunnable)
+                    rvDevices.postDelayed(autoSaveRunnable, 500)
+                }
             }
         }
         
-        etClickThreshold.addTextChangedListener(textWatcher)
-        etShortPressThreshold.addTextChangedListener(textWatcher)
-        etLongPressThreshold.addTextChangedListener(textWatcher)
-        etDoubleClickInterval.addTextChangedListener(textWatcher)
+        val shortPressSliderListener = object : com.google.android.material.slider.Slider.OnChangeListener {
+            override fun onValueChange(slider: com.google.android.material.slider.Slider, value: Float, fromUser: Boolean) {
+                if (fromUser && !isLoadingConfig) {
+                    var adjusted = false
+                    val minValue = 100f
+                    val actualValue = maxOf(minValue, value)
+                    
+                    // 确保短按阈值不小于100ms
+                    if (actualValue != value) {
+                        slider.value = actualValue
+                    }
+                    
+                    // 确保短按 > 点击
+                    if (actualValue <= sliderClick.value) {
+                        sliderClick.value = maxOf(actualValue - 100f, sliderClick.valueFrom)
+                        adjusted = true
+                    }
+                    // 确保长按 > 短按
+                    if (actualValue >= sliderLongPress.value) {
+                        sliderLongPress.value = minOf(actualValue + 100f, sliderLongPress.valueTo)
+                        adjusted = true
+                    }
+                    if (adjusted) {
+                        Toast.makeText(context, "短按阈值已调整相关参数", Toast.LENGTH_SHORT).show()
+                    }
+                    updateSliderValueTexts()
+                    rvDevices.removeCallbacks(autoSaveRunnable)
+                    rvDevices.postDelayed(autoSaveRunnable, 500)
+                }
+            }
+        }
+        
+        val longPressSliderListener = object : com.google.android.material.slider.Slider.OnChangeListener {
+            override fun onValueChange(slider: com.google.android.material.slider.Slider, value: Float, fromUser: Boolean) {
+                if (fromUser && !isLoadingConfig) {
+                    var adjusted = false
+                    val minValue = 100f
+                    val actualValue = maxOf(minValue, value)
+                    
+                    // 确保长按阈值不小于100ms
+                    if (actualValue != value) {
+                        slider.value = actualValue
+                    }
+                    
+                    // 确保长按 > 短按
+                    if (actualValue <= sliderShortPress.value) {
+                        sliderShortPress.value = maxOf(actualValue - 100f, sliderShortPress.valueFrom)
+                        adjusted = true
+                        // 同时确保短按 > 点击
+                        if (sliderShortPress.value <= sliderClick.value) {
+                            sliderClick.value = maxOf(sliderShortPress.value - 100f, sliderClick.valueFrom)
+                        }
+                    }
+                    if (adjusted) {
+                        Toast.makeText(context, "长按阈值已调整相关参数", Toast.LENGTH_SHORT).show()
+                    }
+                    updateSliderValueTexts()
+                    rvDevices.removeCallbacks(autoSaveRunnable)
+                    rvDevices.postDelayed(autoSaveRunnable, 500)
+                }
+            }
+        }
+        
+        val doubleClickSliderListener = object : com.google.android.material.slider.Slider.OnChangeListener {
+            override fun onValueChange(slider: com.google.android.material.slider.Slider, value: Float, fromUser: Boolean) {
+                if (fromUser && !isLoadingConfig) {
+                    var adjusted = false
+                    val minValue = 100f
+                    val actualValue = maxOf(minValue, value)
+                    
+                    // 确保双击间隔不小于100ms
+                    if (actualValue != value) {
+                        slider.value = actualValue
+                    }
+                    
+                    // 确保双击间隔 > 点击
+                    if (actualValue <= sliderClick.value) {
+                        sliderClick.value = maxOf(actualValue - 100f, sliderClick.valueFrom)
+                        adjusted = true
+                    }
+                    if (adjusted) {
+                        Toast.makeText(context, "双击间隔已调整相关参数", Toast.LENGTH_SHORT).show()
+                    }
+                    updateSliderValueTexts()
+                    rvDevices.removeCallbacks(autoSaveRunnable)
+                    rvDevices.postDelayed(autoSaveRunnable, 500)
+                }
+            }
+        }
+        
+        sliderClick.addOnChangeListener(clickSliderListener)
+        sliderShortPress.addOnChangeListener(shortPressSliderListener)
+        sliderLongPress.addOnChangeListener(longPressSliderListener)
+        sliderDoubleClick.addOnChangeListener(doubleClickSliderListener)
         
         // 为开关添加监听器，立即保存
         switchEnableLog.setOnCheckedChangeListener { _, _ ->
@@ -452,6 +720,10 @@ class ModuleFragment : Fragment() {
         
         btnExportConfig.setOnClickListener {
             exportConfig()
+        }
+        
+        btnExportLogConfig.setOnClickListener {
+            exportLogConfig()
         }
     }
     
@@ -478,15 +750,8 @@ class ModuleFragment : Fragment() {
             activity?.runOnUiThread {
                 if (configContent != null && configContent.isNotEmpty()) {
                     parseConfig(configContent)
-                    context?.let {
-                Toast.makeText(it, "配置加载成功", Toast.LENGTH_SHORT).show()
-            }
                 } else {
-                    context?.let {
-                Toast.makeText(it, "配置文件不存在，扫描所有设备", Toast.LENGTH_SHORT).show()
-            }
-                    // 配置文件不存在时，扫描所有设备但都不选中
-                    scanAllDevices(emptyList())
+                    // 配置文件不存在时使用默认配置
                     setDefaultValues()
                 }
                 
@@ -500,11 +765,19 @@ class ModuleFragment : Fragment() {
     }
 
     private fun parseConfig(content: String) {
+        android.util.Log.d("ModuleFragment", "开始解析配置内容，长度: ${content.length}")
+        android.util.Log.d("ModuleFragment", "配置内容: $content")
+        
         val lines = content.split("\n")
         val configuredDevices = mutableListOf<String>()
+        var clickThreshold = 100f
+        var shortPressThreshold = 1000f
+        var longPressThreshold = 2000f
+        var doubleClickInterval = 300f
         
         for (line in lines) {
             val trimmedLine = line.trim()
+            android.util.Log.d("ModuleFragment", "处理配置行: '$trimmedLine'")
             if (trimmedLine.startsWith("#") || !trimmedLine.contains("=")) continue
             
             val parts = trimmedLine.split("=", limit = 2)
@@ -512,6 +785,8 @@ class ModuleFragment : Fragment() {
             
             val key = parts[0].trim()
             val value = parts[1].trim()
+            
+            android.util.Log.d("ModuleFragment", "解析配置项: key='$key', value='$value'")
             
             when (key) {
                 "device" -> {
@@ -524,10 +799,22 @@ class ModuleFragment : Fragment() {
                         }
                     }
                 }
-                "click_threshold" -> etClickThreshold.setText(value)
-                "short_press_threshold" -> etShortPressThreshold.setText(value)
-                "long_press_threshold" -> etLongPressThreshold.setText(value)
-                "double_click_interval" -> etDoubleClickInterval.setText(value)
+                "click_threshold" -> {
+                    clickThreshold = maxOf(100f, value.toFloatOrNull() ?: 100f)
+                    android.util.Log.d("ModuleFragment", "读取点击阈值: $clickThreshold")
+                }
+                "short_press_threshold" -> {
+                    shortPressThreshold = maxOf(100f, value.toFloatOrNull() ?: 1000f)
+                    android.util.Log.d("ModuleFragment", "读取短按阈值: $shortPressThreshold")
+                }
+                "long_press_threshold" -> {
+                    longPressThreshold = maxOf(100f, value.toFloatOrNull() ?: 2000f)
+                    android.util.Log.d("ModuleFragment", "读取长按阈值: $longPressThreshold")
+                }
+                "double_click_interval" -> {
+                    doubleClickInterval = maxOf(100f, value.toFloatOrNull() ?: 300f)
+                    android.util.Log.d("ModuleFragment", "读取双击间隔: $doubleClickInterval")
+                }
                 "enable_log" -> switchEnableLog.isChecked = value == "1"
                 "cpu_affinity" -> {
                     // 解析CPU亲和性配置，设置对应的CheckBox
@@ -536,8 +823,20 @@ class ModuleFragment : Fragment() {
             }
         }
         
-        // 扫描所有设备并根据配置文件设置选中状态
-        scanAllDevices(configuredDevices)
+        android.util.Log.d("ModuleFragment", "解析完成 - 点击: $clickThreshold, 短按: $shortPressThreshold, 长按: $longPressThreshold, 双击: $doubleClickInterval")
+        
+        // 直接应用读取的值，不进行任何调整
+        sliderClick.value = clickThreshold
+        sliderShortPress.value = shortPressThreshold
+        sliderLongPress.value = longPressThreshold
+        sliderDoubleClick.value = doubleClickInterval
+        
+        // 应用配置到已扫描的设备列表
+        applyConfigToDevices(configuredDevices)
+        
+        // 更新显示
+        updateSliderValueTexts()
+        updateTimelineDisplay()
     }
     
     private fun setCpuAffinityFromConfig(value: String) {
@@ -753,11 +1052,18 @@ class ModuleFragment : Fragment() {
     }
 
     private fun setDefaultValues() {
-        etClickThreshold.setText("100")
-        etShortPressThreshold.setText("1000")
-        etLongPressThreshold.setText("2000")
-        etDoubleClickInterval.setText("300")
+        // 设置默认值，确保符合限制条件：短按>点击，长按>短按，双击间隔>点击
+        val clickDefault = 100f
+        val shortPressDefault = 1000f
+        val longPressDefault = 2000f
+        val doubleClickDefault = 300f
+        
+        sliderClick.value = clickDefault
+        sliderShortPress.value = maxOf(shortPressDefault, clickDefault + 100f)
+        sliderLongPress.value = maxOf(longPressDefault, sliderShortPress.value + 100f)
+        sliderDoubleClick.value = maxOf(doubleClickDefault, clickDefault + 100f)
         switchEnableLog.isChecked = false
+        updateSliderValueTexts()
         // CPU亲和性的默认值在createCpuCheckBoxes方法中处理
     }
 
@@ -818,10 +1124,10 @@ class ModuleFragment : Fragment() {
             
             // 时间配置
             configBuilder.append("# 时间配置参数（毫秒）\n")
-            configBuilder.append("click_threshold=${etClickThreshold.text}\n")
-            configBuilder.append("short_press_threshold=${etShortPressThreshold.text}\n")
-            configBuilder.append("long_press_threshold=${etLongPressThreshold.text}\n")
-            configBuilder.append("double_click_interval=${etDoubleClickInterval.text}\n")
+            configBuilder.append("click_threshold=${sliderClick.value.toInt()}\n")
+            configBuilder.append("short_press_threshold=${sliderShortPress.value.toInt()}\n")
+            configBuilder.append("long_press_threshold=${sliderLongPress.value.toInt()}\n")
+            configBuilder.append("double_click_interval=${sliderDoubleClick.value.toInt()}\n")
             configBuilder.append("\n")
             
             // 日志配置
@@ -881,6 +1187,11 @@ class ModuleFragment : Fragment() {
         exportLauncher.launch("kctrl_config_$timestamp.zip")
     }
     
+    private fun exportLogConfig() {
+        val timestamp = System.currentTimeMillis()
+        exportLogLauncher.launch("kctrl_log_config_$timestamp.txt")
+    }
+    
     private fun exportConfigToUri(uri: Uri) {
         val mainActivity = activity as? MainActivity ?: return
         
@@ -893,52 +1204,39 @@ class ModuleFragment : Fragment() {
                         android.util.Log.d("ModuleFragment", "开始导出配置文件...")
                         
                         // 先检查配置文件是否存在
-                        mainActivity.executeRootCommandAsync("test -f ${MainActivity.CONFIG_FILE} && echo 'exists' || echo 'not_exists'") { fileCheckResult ->
-                            android.util.Log.d("ModuleFragment", "配置文件检查结果: $fileCheckResult")
-                            
-                            val configEntry = ZipEntry("config.txt")
-                            zipOut.putNextEntry(configEntry)
-                            
-                            if (fileCheckResult?.trim() == "exists") {
-                                // 直接读取原始文件内容，不经过base64解码
-                                mainActivity.executeRootCommandAsync("cat ${MainActivity.CONFIG_FILE} 2>/dev/null") { rawConfigContent ->
-                                    if (!rawConfigContent.isNullOrEmpty()) {
-                                        zipOut.write(rawConfigContent.toByteArray(Charsets.UTF_8))
-                                        android.util.Log.d("ModuleFragment", "配置文件导出成功，内容长度: ${rawConfigContent.length}")
-                                    } else {
-                                        // 如果配置为空，创建默认配置
-                                        val defaultConfig = "# KCtrl 配置文件\n# 此文件由应用自动生成\n"
-                                        zipOut.write(defaultConfig.toByteArray())
-                                        android.util.Log.w("ModuleFragment", "配置文件为空，已导出默认配置")
-                                    }
-                                    zipOut.closeEntry()
-                                    
-                                    // 导出 scripts 文件夹 - 使用root命令
-                                    exportScriptsToZip(mainActivity, zipOut) {
-                                        // 导出完成后的操作
-                                        activity?.runOnUiThread {
-                                            context?.let {
-                        Toast.makeText(it, "配置导出成功", Toast.LENGTH_SHORT).show()
-                    }
-                                        }
-                                    }
-                                }
+                        val fileCheckResult = mainActivity.executeRootCommand("test -f ${MainActivity.CONFIG_FILE} && echo 'exists' || echo 'not_exists'")
+                        android.util.Log.d("ModuleFragment", "配置文件检查结果: $fileCheckResult")
+                        
+                        val configEntry = ZipEntry("config.txt")
+                        zipOut.putNextEntry(configEntry)
+                        
+                        if (fileCheckResult?.trim() == "exists") {
+                            // 直接读取原始文件内容，不经过base64解码
+                            val rawConfigContent = mainActivity.executeRootCommand("cat ${MainActivity.CONFIG_FILE} 2>/dev/null")
+                            if (!rawConfigContent.isNullOrEmpty()) {
+                                zipOut.write(rawConfigContent.toByteArray(Charsets.UTF_8))
+                                android.util.Log.d("ModuleFragment", "配置文件导出成功，内容长度: ${rawConfigContent.length}")
                             } else {
-                                // 如果配置文件不存在，创建默认配置
+                                // 如果配置为空，创建默认配置
                                 val defaultConfig = "# KCtrl 配置文件\n# 此文件由应用自动生成\n"
                                 zipOut.write(defaultConfig.toByteArray())
-                                android.util.Log.w("ModuleFragment", "配置文件不存在，已导出默认配置")
-                                zipOut.closeEntry()
-                                
-                                // 导出 scripts 文件夹 - 使用root命令
-                                exportScriptsToZip(mainActivity, zipOut) {
-                                    // 导出完成后的操作
-                                    activity?.runOnUiThread {
-                                        context?.let {
-                    Toast.makeText(it, "配置导出成功", Toast.LENGTH_SHORT).show()
-                }
-                                    }
-                                }
+                                android.util.Log.w("ModuleFragment", "配置文件为空，已导出默认配置")
+                            }
+                        } else {
+                            // 如果配置文件不存在，创建默认配置
+                            val defaultConfig = "# KCtrl 配置文件\n# 此文件由应用自动生成\n"
+                            zipOut.write(defaultConfig.toByteArray())
+                            android.util.Log.w("ModuleFragment", "配置文件不存在，已导出默认配置")
+                        }
+                        zipOut.closeEntry()
+                        
+                        // 导出 scripts 文件夹 - 使用同步root命令
+                        exportScriptsToZipSync(mainActivity, zipOut)
+                        
+                        // 导出完成后的操作
+                        activity?.runOnUiThread {
+                            context?.let {
+                                Toast.makeText(it, "配置导出成功", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }
@@ -946,8 +1244,8 @@ class ModuleFragment : Fragment() {
             } catch (e: Exception) {
                 activity?.runOnUiThread {
                     context?.let {
-                    Toast.makeText(it, "配置导出失败: ${e.message}", Toast.LENGTH_LONG).show()
-                }
+                        Toast.makeText(it, "配置导出失败: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }.start()
@@ -1085,6 +1383,143 @@ class ModuleFragment : Fragment() {
         }
     }
     
+    private fun exportScriptsToZipSync(mainActivity: MainActivity, zipOut: ZipOutputStream) {
+        val scriptsPath = "${MainActivity.KCTRL_MODULE_PATH}/scripts"
+        
+        // 检查scripts目录是否存在
+        val checkResult = mainActivity.executeRootCommand("test -d $scriptsPath && echo 'exists' || echo 'not_exists'")
+        if (checkResult?.trim() != "exists") {
+            return // scripts目录不存在，跳过
+        }
+        
+        // 获取scripts目录下的所有文件
+        val fileList = mainActivity.executeRootCommand("find $scriptsPath -type f 2>/dev/null || true")
+        if (fileList.isNullOrEmpty()) {
+            return // 没有文件
+        }
+        
+        val filePaths = fileList.split("\n").filter { it.trim().isNotEmpty() }
+        if (filePaths.isEmpty()) {
+            return
+        }
+        
+        // 处理每个文件
+        filePaths.forEach { filePath ->
+            val relativePath = filePath.removePrefix("${MainActivity.KCTRL_MODULE_PATH}/")
+            
+            // 读取文件内容
+            val fileContent = mainActivity.executeRootCommand("cat '$filePath' 2>/dev/null || true")
+            if (!fileContent.isNullOrEmpty()) {
+                val fileEntry = ZipEntry(relativePath)
+                zipOut.putNextEntry(fileEntry)
+                zipOut.write(fileContent.toByteArray())
+                zipOut.closeEntry()
+            }
+        }
+    }
+    
+    private fun exportLogConfigToUri(uri: Uri) {
+        val mainActivity = activity as? MainActivity ?: return
+        
+        Thread {
+            try {
+                val contentResolver = requireContext().contentResolver
+                contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    // 创建日志配置内容
+                    val logConfigBuilder = StringBuilder()
+                    logConfigBuilder.append("# KCtrl 日志配置导出\n")
+                    logConfigBuilder.append("# 导出时间: ${java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())}\n")
+                    logConfigBuilder.append("\n")
+                    
+                    // 读取当前配置文件中的日志相关配置
+                    val fileCheckResult = mainActivity.executeRootCommand("test -f ${MainActivity.CONFIG_FILE} && echo 'exists' || echo 'not_exists'")
+                    
+                    if (fileCheckResult?.trim() == "exists") {
+                        val configContent = mainActivity.executeRootCommand("cat ${MainActivity.CONFIG_FILE} 2>/dev/null")
+                        if (!configContent.isNullOrEmpty()) {
+                            // 提取日志相关的配置项
+                            val lines = configContent.split("\n")
+                            logConfigBuilder.append("# 当前配置文件中的日志配置:\n")
+                            
+                            for (line in lines) {
+                                val trimmedLine = line.trim()
+                                if (trimmedLine.startsWith("enable_log") || 
+                                    trimmedLine.startsWith("#") && (trimmedLine.contains("日志") || trimmedLine.contains("log"))) {
+                                    logConfigBuilder.append(trimmedLine).append("\n")
+                                }
+                            }
+                        } else {
+                            logConfigBuilder.append("# 当前配置文件为空\n")
+                        }
+                    } else {
+                        logConfigBuilder.append("# 配置文件不存在\n")
+                    }
+                    
+                    logConfigBuilder.append("\n")
+                    logConfigBuilder.append("# 当前应用中的日志设置:\n")
+                    logConfigBuilder.append("enable_log=${if (switchEnableLog.isChecked) "1" else "0"}\n")
+                    
+                    // 检查日志文件是否存在（如果服务已运行）
+            val logFileCheck = mainActivity.executeRootCommand("test -f /data/adb/modules/kctrl/klog.log && echo 'exists' || echo 'not_exists'")
+            if (logFileCheck?.trim() == "exists") {
+                val logFileSize = mainActivity.executeRootCommand("du -h /data/adb/modules/kctrl/klog.log 2>/dev/null | cut -f1")
+                logConfigBuilder.append("# 日志文件大小: ${logFileSize?.trim() ?: "未知"}\n")
+                
+                val logFileLines = mainActivity.executeRootCommand("wc -l /data/adb/modules/kctrl/klog.log 2>/dev/null | cut -d' ' -f1")
+                logConfigBuilder.append("# 日志文件行数: ${logFileLines?.trim() ?: "未知"}\n")
+            } else {
+                logConfigBuilder.append("# 日志文件不存在 (/data/adb/modules/kctrl/klog.log)\n")
+            }
+            
+            logConfigBuilder.append("\n")
+            logConfigBuilder.append("# ========================================\n")
+            logConfigBuilder.append("# 配置文件内容 (config.txt)\n")
+            logConfigBuilder.append("# ========================================\n")
+            
+            // 读取配置文件内容
+            val configContent = mainActivity.executeRootCommand("cat /data/adb/modules/kctrl/config.txt 2>/dev/null")
+            if (configContent != null && configContent.isNotEmpty()) {
+                logConfigBuilder.append(configContent)
+            } else {
+                logConfigBuilder.append("# 配置文件不存在或为空\n")
+            }
+            
+            logConfigBuilder.append("\n")
+            logConfigBuilder.append("# ========================================\n")
+            logConfigBuilder.append("# 日志文件内容 (klog.log)\n")
+            logConfigBuilder.append("# ========================================\n")
+            
+            // 读取日志文件内容（限制为最后1000行，防止文件过大）
+            if (logFileCheck?.trim() == "exists") {
+                val logContent = mainActivity.executeRootCommand("tail -1000 /data/adb/modules/kctrl/klog.log 2>/dev/null")
+                if (logContent != null && logContent.isNotEmpty()) {
+                    logConfigBuilder.append(logContent)
+                } else {
+                    logConfigBuilder.append("# 日志文件为空\n")
+                }
+            } else {
+                logConfigBuilder.append("# 日志文件不存在\n")
+            }
+            
+            // 写入完整配置到文件
+            outputStream.write(logConfigBuilder.toString().toByteArray(Charsets.UTF_8))
+                    
+                    activity?.runOnUiThread {
+                        context?.let {
+                            Toast.makeText(it, "日志配置导出成功", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                activity?.runOnUiThread {
+                    context?.let {
+                        Toast.makeText(it, "日志配置导出失败: ${e.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            }
+        }.start()
+    }
+    
     private fun addDirectoryToZip(zipOut: ZipOutputStream, dir: File, basePath: String) {
         val files = dir.listFiles() ?: return
         
@@ -1109,6 +1544,92 @@ class ModuleFragment : Fragment() {
                 }
                 zipOut.closeEntry()
             }
+        }
+    }
+    
+    private fun scanAllDevicesSilently() {
+        val mainActivity = activity as? MainActivity
+        
+        // 静默扫描，不显示进度对话框
+        mainActivity?.executeRootCommandAsync("find /dev/input -name 'event*' -type c | sort -V") { result ->
+            deviceList.clear()
+            
+            if (result != null && result.isNotEmpty()) {
+                val devicePaths = result.split("\n").filter { it.trim().isNotEmpty() }
+                
+                for (devicePath in devicePaths) {
+                    val trimmedPath = devicePath.trim()
+                    if (trimmedPath.startsWith("/dev/input/event")) {
+                        // 获取设备真实名称
+                        val eventNumber = trimmedPath.substringAfterLast("event")
+                        val deviceName = getDeviceRealName(eventNumber) ?: "输入设备$eventNumber"
+                        
+                        deviceList.add(DeviceItem(trimmedPath, false, deviceName, false))
+                    }
+                }
+            } else {
+                // 如果扫描失败，尝试手动检查更多event设备
+                val maxEventNumber = 20
+                var checkedCount = 0
+                
+                for (i in 0..maxEventNumber) {
+                    val devicePath = "/dev/input/event$i"
+                    mainActivity?.executeRootCommandAsync("test -e $devicePath && echo 'exists'") { checkResult ->
+                        if (checkResult?.trim() == "exists") {
+                            val deviceName = getDeviceRealName(i.toString()) ?: "输入设备$i"
+                            deviceList.add(DeviceItem(devicePath, false, deviceName, false))
+                        }
+                        
+                        checkedCount++
+                        if (checkedCount >= maxEventNumber + 1) {
+                            activity?.runOnUiThread {
+                                if (deviceList.isEmpty()) {
+                                    addDefaultDevices(emptyList())
+                                }
+                                deviceAdapter.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
+                return@executeRootCommandAsync
+            }
+            
+            // 静默更新UI
+            activity?.runOnUiThread {
+                if (deviceList.isEmpty()) {
+                    addDefaultDevices(emptyList())
+                }
+                deviceAdapter.notifyDataSetChanged()
+            }
+        }
+    }
+    
+    private fun applyConfigToDevices(configuredDevices: List<String>) {
+        // 重置所有设备的选中状态
+        deviceList.forEach { device ->
+            device.isSelected = false
+            device.useDeviceName = false
+            
+            // 根据配置文件设置选中状态和模式
+            for (configDevice in configuredDevices) {
+                if (configDevice == device.path) {
+                    // 匹配设备路径
+                    device.isSelected = true
+                    device.useDeviceName = false
+                    break
+                } else if (configDevice.startsWith("\"") && configDevice.endsWith("\"") && 
+                          configDevice.substring(1, configDevice.length - 1) == device.name) {
+                    // 匹配设备名（去掉双引号）
+                    device.isSelected = true
+                    device.useDeviceName = true
+                    break
+                }
+            }
+        }
+        
+        // 更新UI
+        activity?.runOnUiThread {
+            deviceAdapter.notifyDataSetChanged()
         }
     }
 }

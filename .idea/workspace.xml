@@ -5,7 +5,32 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_component_explorer.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_developer_info.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_floating_window_demo.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_main.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_script_edit.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_splash.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
@@ -20,12 +45,42 @@
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_script_edit.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_script_select.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_template_select.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/dialog_upload_script.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/floating_window_layout.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
       </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_about.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_community.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_component_explorer.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
@@ -45,12 +100,37 @@
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
       </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/fragment_upload.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_community.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_component.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_device.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
       </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_function_switch.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_group_app.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_group_type.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
@@ -66,6 +146,11 @@
         </config>
       </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_script_line.xml">
+        <config>
+          <theme>@style/Theme.Kctrl控制器</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/item_swipe_menu.xml">
         <config>
           <theme>@style/Theme.Kctrl控制器</theme>
         </config>
@@ -87,17 +172,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f47d34be-c06b-47dd-877c-8ad6baebcdf3" name="更改" comment="update_first...">
-      <change afterPath="$PROJECT_DIR$/app/src/main/assets/tip.mp3" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/jy.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/qr_donate.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/xl.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/zd.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/release/baselineProfiles/0/app-release.dm" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/baselineProfiles/0/app-release.dm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/release/baselineProfiles/1/app-release.dm" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/baselineProfiles/1/app-release.dm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/release/output-metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/output-metadata.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/assets/Effect_Tick.ogg" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/assets/funcs.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/assets/funcs.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/AboutFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/AboutFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ConfigFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ConfigFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowDemoActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowDemoActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowManager.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowService.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/MainActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ModuleFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ModuleFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ScriptEditActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ScriptEditActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ScriptItemAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ScriptItemAdapter.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/StatusFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/StatusFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/TemplateAdapter.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/TemplateAdapter.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_floating_window_demo.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_floating_window_demo.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_script_edit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_script_edit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/dialog_key_edit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/dialog_key_edit.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_about.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_about.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_module.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_module.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_status.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_status.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/item_script_line.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/item_script_line.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values-night/themes.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values-night/themes.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/themes.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/themes.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -146,32 +254,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.app.executor": "Run",
-    "ApkExportedModule": "kctrl控制器.app",
-    "ExportApk.ApkPathForkctrl控制器.app": "C:\\Users\\28089\\AndroidStudioProjects\\kctrlmgr\\app",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/28089/AndroidStudioProjects/kctrlmgr/app/src/main/assets"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;ApkExportedModule&quot;: &quot;kctrl控制器.app&quot;,
+    &quot;ExportApk.ApkPathForkctrl控制器.app&quot;: &quot;C:\\Users\\28089\\AndroidStudioProjects\\kctrlmgr\\app&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/28089/AndroidStudioProjects/kctrlmgr/app/src/main/res/drawable&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Dependencies&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.17&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
   },
-  "keyToStringList": {
-    "ExportApk.BuildVariants": [
-      "release"
+  &quot;keyToStringList&quot;: {
+    &quot;ExportApk.BuildVariants&quot;: [
+      &quot;release&quot;
     ],
-    "kotlin-gradle-user-dirs": [
-      "C:\\Users\\28089\\.gradle"
+    &quot;kotlin-gradle-user-dirs&quot;: [
+      &quot;C:\\Users\\28089\\.gradle&quot;
     ]
   }
-}]]></component>
+}</component>
+  <component name="PsdUISettings">
+    <option name="LAST_EDITED_BUILD_TYPE" value="release" />
+  </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\res\drawable" />
       <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\assets" />
       <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\java\com\idlike\kctrl\mgr" />
     </key>
@@ -272,7 +388,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754890402420</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="update_first...">
+      <option name="closed" value="true" />
+      <created>1754909482511</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1754909482512</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">

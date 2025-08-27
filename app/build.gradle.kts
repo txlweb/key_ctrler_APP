@@ -11,8 +11,8 @@ android {
         applicationId = "com.idlike.kctrl.mgr"
         minSdk = 29  // Android 10 (API 29)
         targetSdk = 35  // Android 15 (API 35)
-        versionCode = 10020
-        versionName = "1.2"
+        versionCode = 10053
+        versionName = "1.5 Fx 3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
@@ -131,9 +131,19 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation(libs.androidx.swiperefreshlayout)
+    
+    // 滑动菜单
+
+
+    // 图片加载
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    
+    // 协程
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // 仅在需要时添加测试依赖
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
 }

@@ -4,15 +4,22 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.DefaultItemAnimator
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.color.DynamicColors
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -44,6 +51,10 @@ class ScriptEditActivity : AppCompatActivity() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // 启用动态颜色（莫奈取色）
+        DynamicColors.applyToActivityIfAvailable(this)
+        
         setContentView(R.layout.activity_script_edit)
         
         scriptFilePath = intent.getStringExtra(EXTRA_SCRIPT_PATH) ?: ""
@@ -78,6 +89,22 @@ class ScriptEditActivity : AppCompatActivity() {
         rvTemplates.layoutManager = LinearLayoutManager(this)
         rvTemplates.adapter = templateAdapter
         
+        // 禁用默认动画器，避免动画冲突和空白问题
+        rvTemplates.itemAnimator = null
+        
+        // 设置模板库的进入动画
+        rvTemplates.alpha = 0f
+        rvTemplates.animate()
+            .alpha(1f)
+            .setDuration(200)
+            .start()
+        
+        // 设置默认展开第一个分组
+        if (templateGroups.isNotEmpty()) {
+            templateGroups[0].isExpanded = true
+            templateAdapter.refreshData()
+        }
+        
         // 设置脚本条目列表
         scriptAdapter = ScriptItemAdapter(scriptItems, { position ->
             removeScriptItem(position)
@@ -90,6 +117,45 @@ class ScriptEditActivity : AppCompatActivity() {
         // 设置拖动排序
         val itemTouchHelper = ItemTouchHelper(ScriptItemTouchCallback())
         itemTouchHelper.attachToRecyclerView(rvScriptItems)
+        
+        // 添加全局布局监听器，只在必要时滚动到焦点编辑项
+        rvScriptItems.viewTreeObserver.addOnGlobalLayoutListener {
+            val rect = android.graphics.Rect()
+            rvScriptItems.getWindowVisibleDisplayFrame(rect)
+            val screenHeight = rvScriptItems.rootView.height
+            val keypadHeight = screenHeight - rect.bottom
+            
+            if (keypadHeight > screenHeight * 0.15) {
+                // 键盘弹出，查找当前有焦点的EditText
+                val focusedView = currentFocus
+                if (focusedView is com.google.android.material.textfield.TextInputEditText) {
+                    // 查找包含该EditText的ViewHolder
+                    var parent = focusedView.parent
+                    while (parent != null && parent !is ViewGroup) {
+                        parent = parent.parent
+                    }
+                    if (parent is ViewGroup) {
+                        val holder = rvScriptItems.findContainingViewHolder(parent)
+                        if (holder != null) {
+                            val position = holder.adapterPosition
+                            if (position != RecyclerView.NO_POSITION) {
+                                val layoutManager = rvScriptItems.layoutManager as LinearLayoutManager
+                                
+                                // 检查当前焦点项是否已经在可见区域内
+                                val firstVisible = layoutManager.findFirstVisibleItemPosition()
+                                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                                
+                                // 只有当焦点项不在可见范围内时才滚动
+                                if (position < firstVisible || position > lastVisible) {
+                                    val offset = rvScriptItems.height / 3
+                                    layoutManager.scrollToPositionWithOffset(position, offset)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private fun setupClickListeners() {
@@ -165,6 +231,7 @@ class ScriptEditActivity : AppCompatActivity() {
     private fun loadScript() {
         if (scriptFilePath.isEmpty()) return
         
+        isLoadingScript = true
         try {
             // 使用root shell命令读取文件
             val command = "cat '$scriptFilePath' 2>/dev/null || echo '#!/bin/bash\n\n# 脚本内容请在此处添加\n'"
@@ -176,9 +243,8 @@ class ScriptEditActivity : AppCompatActivity() {
             Log.d("ScriptLoad", "读取完成，退出码: $exitCode")
             
             if (exitCode == 0 && content.isNotEmpty()) {
-                // 对读取的脚本进行if拆分处理
-                val processedContent = splitIfStatements(content)
-                parseScriptContent(processedContent)
+                // 直接解析原始内容，不再拆分if语句
+                parseScriptContent(content)
                 Log.d("ScriptLoad", "脚本加载成功")
             } else if (exitCode != 0) {
                 Log.e("ScriptLoad", "读取脚本失败，退出码: $exitCode")
@@ -191,41 +257,12 @@ class ScriptEditActivity : AppCompatActivity() {
             e.printStackTrace()
             Toast.makeText(this, "加载脚本失败: ${e.message}", Toast.LENGTH_SHORT).show()
             Log.e("ScriptLoad", "加载脚本异常: ${e.message}")
+        } finally {
+            isLoadingScript = false
         }
     }
     
-    private fun splitIfStatements(script: String): String {
-        Log.d("ScriptSplit", "开始拆分if语句")
-        
-        val lines = script.split("\n")
-        val processedLines = mutableListOf<String>()
-        
-        for (line in lines) {
-            val trimmed = line.trim()
-            
-            // 检查是否为单行if-then语句，需要拆分
-            if (trimmed.matches(Regex("^if\\s+.*\\s*;\\s*then\\s*$"))) {
-                // 拆分if; then为两行
-                val ifPart = trimmed.replace(Regex("\\s*;\\s*then\\s*$"), "")
-                processedLines.add(ifPart)
-                processedLines.add("then")
-                Log.d("ScriptSplit", "拆分if语句: $trimmed -> [$ifPart, then]")
-            } else if (trimmed.matches(Regex("^elif\\s+.*\\s*;\\s*then\\s*$"))) {
-                // 拆分elif; then为两行
-                val elifPart = trimmed.replace(Regex("\\s*;\\s*then\\s*$"), "")
-                processedLines.add(elifPart)
-                processedLines.add("then")
-                Log.d("ScriptSplit", "拆分elif语句: $trimmed -> [$elifPart, then]")
-            } else {
-                // 保持原行不变
-                processedLines.add(line)
-            }
-        }
-        
-        val result = processedLines.joinToString("\n")
-        Log.d("ScriptSplit", "拆分完成，原始行数: ${lines.size}, 处理后行数: ${processedLines.size}")
-        return result
-    }
+
     
     private fun parseScriptContent(content: String) {
         scriptItems.clear()
@@ -241,6 +278,7 @@ class ScriptEditActivity : AppCompatActivity() {
                         templateLabel = "sh头",
                         isComment = true
                     ))
+                    continue
                 }
                 // 检查是否为注释行
                 else if (trimmed.startsWith("#")) {
@@ -248,15 +286,42 @@ class ScriptEditActivity : AppCompatActivity() {
                         content = trimmed,
                         isComment = true
                     ))
+                    continue
                 }
-                // 普通命令行
-                else {
-                    // 尝试从模板中找到匹配的标签
-                    val matchedLabel = commandToLabelMap[trimmed]
-                    scriptItems.add(ScriptItem(
-                        content = trimmed,
-                        templateLabel = matchedLabel
-                    ))
+                if(trimmed.startsWith("if") || trimmed.startsWith("elif")){
+                    val regex = Regex("""(?<=\b(?:if|elif))\s+|\s*(?=; ?then)""")
+                    val prepared = trimmed.replace(regex, "§")
+
+                    val lsif: List<String> = prepared.split("§")
+                    for (it in lsif){
+                        if(it.trim() == "") continue
+                        var matchedLabel = commandToLabelMap[it.trim()]
+
+                        if (matchedLabel == null) matchedLabel = "自定义命令"
+                        if (it.startsWith("if")) matchedLabel = "如果("
+                        if (it.startsWith("elif")) matchedLabel = "否则"
+
+                        scriptItems.add(
+                            ScriptItem(
+                                content = it,
+                                templateLabel = matchedLabel
+                            )
+                        )
+                    }
+                }else {
+                    // 直接处理所有行，保持原始格式
+                    var matchedLabel = commandToLabelMap[trimmed]
+                    if (matchedLabel == null) {
+                        matchedLabel = "自定义命令"
+                    }
+
+
+                    scriptItems.add(
+                        ScriptItem(
+                            content = trimmed,
+                            templateLabel = matchedLabel.toString()
+                        )
+                    )
                 }
             }
         }
@@ -265,6 +330,8 @@ class ScriptEditActivity : AppCompatActivity() {
         scriptAdapter.notifyDataSetChanged()
     }
     
+    private var isLoadingScript = false
+
     private fun addScriptItem(command: String) {
         // 检查是否为手电筒相关命令
         if (command.contains("TorchToggleService") || command.contains("手电") || command.contains("keyevent 224")) {
@@ -299,16 +366,52 @@ class ScriptEditActivity : AppCompatActivity() {
         }
         
         scriptItems.add(scriptItem)
-        scriptAdapter.notifyItemInserted(scriptItems.size - 1)
-        rvScriptItems.scrollToPosition(scriptItems.size - 1)
+        val newPosition = scriptItems.size - 1
+        scriptAdapter.notifyItemInserted(newPosition)
+        
+        // 只在用户主动添加时才滚动到新项目
+        if (!isLoadingScript) {
+            rvScriptItems.postDelayed({
+                val layoutManager = rvScriptItems.layoutManager as LinearLayoutManager
+                val offset = rvScriptItems.height / 3
+                layoutManager.scrollToPositionWithOffset(newPosition, offset)
+                
+                // 查找新添加的项目的EditText并请求焦点，选中全部文本便于编辑
+                rvScriptItems.postDelayed({
+                    val holder = rvScriptItems.findViewHolderForAdapterPosition(newPosition)
+                    if (holder != null) {
+                        val editText = holder.itemView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etScriptContent)
+                        editText?.requestFocus()
+                        editText?.setSelection(0, editText.text?.length ?: 0)
+                    }
+                }, 100)
+            }, 100)
+        }
     }
     
     private fun addEmptyScriptItem() {
-        scriptItems.add(ScriptItem(
-            content = ""
-        ))
-        scriptAdapter.notifyItemInserted(scriptItems.size - 1)
-        rvScriptItems.scrollToPosition(scriptItems.size - 1)
+        val newItem = ScriptItem(content = "")
+        scriptItems.add(newItem)
+        val newPosition = scriptItems.size - 1
+        scriptAdapter.notifyItemInserted(newPosition)
+
+        // 只在用户主动添加时才滚动到新项目
+        if (!isLoadingScript) {
+            rvScriptItems.postDelayed({
+                val layoutManager = rvScriptItems.layoutManager as LinearLayoutManager
+                val offset = rvScriptItems.height / 3
+                layoutManager.scrollToPositionWithOffset(newPosition, offset)
+
+                // 查找新添加的项目的EditText并请求焦点
+                rvScriptItems.postDelayed({
+                    val holder = rvScriptItems.findViewHolderForAdapterPosition(newPosition)
+                    if (holder != null) {
+                        val editText = holder.itemView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etScriptContent)
+                        editText?.requestFocus()
+                    }
+                }, 100)
+            }, 100)
+        }
     }
     
     private fun removeScriptItem(position: Int) {
@@ -342,56 +445,76 @@ class ScriptEditActivity : AppCompatActivity() {
             }
         }
         
+        // 显示执行中提示
+        Toast.makeText(this, "脚本执行中...", Toast.LENGTH_SHORT).show()
+        
+        // 异步执行脚本
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val result = executeScriptAsync(script)
+                withContext(Dispatchers.Main) {
+                    showScriptResult(result)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@ScriptEditActivity, "执行失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+    
+    private suspend fun executeScriptAsync(script: String): String = withContext(Dispatchers.IO) {
         try {
-            // 先保存脚本到临时文件，然后使用root权限执行
             if (scriptFilePath.isNotEmpty()) {
                 // 如果有指定路径，先保存脚本
                 val parentDir = scriptFilePath.substringBeforeLast("/")
-                Runtime.getRuntime().exec(arrayOf("su", "-c", "mkdir -p '$parentDir'")).waitFor()
                 
+                // 确保目录存在
+                val mkdirProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", "mkdir -p '$parentDir'"))
+                mkdirProcess.waitFor()
+                
+                // 保存脚本文件
                 val encoded = android.util.Base64.encodeToString(script.toByteArray(Charsets.UTF_8), android.util.Base64.NO_WRAP)
                 val saveCommand = "echo '$encoded' | base64 -d > '$scriptFilePath' && chmod +x '$scriptFilePath'"
-                Runtime.getRuntime().exec(arrayOf("su", "-c", saveCommand)).waitFor()
+                val saveProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", saveCommand))
+                saveProcess.waitFor()
                 
-                // 执行脚本文件 - 使用更可靠的shell路径
+                // 执行脚本文件
                 val shellCommand = "cd '${parentDir}' && /system/bin/sh '$scriptFilePath'"
                 val process = Runtime.getRuntime().exec(arrayOf("su", "-c", shellCommand))
+                
                 val result = process.inputStream.bufferedReader().readText()
                 val error = process.errorStream.bufferedReader().readText()
                 
-                val message = if (error.isNotEmpty()) {
+                if (error.isNotEmpty()) {
                     "执行出错:\n$error"
                 } else {
                     "执行成功:\n$result"
                 }
-                
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("脚本执行结果")
-                    .setMessage(message)
-                    .setPositiveButton("确定", null)
-                    .show()
             } else {
-                // 如果没有指定路径，直接执行脚本内容 - 使用更可靠的shell路径
+                // 如果没有指定路径，直接执行脚本内容
                 val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "/system/bin/sh -c '$script'"))
+                
                 val result = process.inputStream.bufferedReader().readText()
                 val error = process.errorStream.bufferedReader().readText()
                 
-                val message = if (error.isNotEmpty()) {
+                if (error.isNotEmpty()) {
                     "执行出错:\n$error"
                 } else {
                     "执行成功:\n$result"
                 }
-                
-                MaterialAlertDialogBuilder(this)
-                    .setTitle("脚本执行结果")
-                    .setMessage(message)
-                    .setPositiveButton("确定", null)
-                    .show()
             }
         } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "执行失败: ${e.message}", Toast.LENGTH_SHORT).show()
+            "执行失败: ${e.message}"
         }
+    }
+    
+    private fun showScriptResult(message: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("脚本执行结果")
+            .setMessage(message)
+            .setPositiveButton("确定", null)
+            .show()
     }
     
     private fun saveScript() {
@@ -454,81 +577,37 @@ class ScriptEditActivity : AppCompatActivity() {
 
     
     private fun generateScript(): String {
-        Log.d("ScriptGenerate", "开始生成脚本")
-        val lines = mutableListOf<String>()
-        
-        // 检查第一行是否已经是shebang，如果不是则添加
-        var hasShebang = false
-        if (scriptItems.isNotEmpty()) {
-            val firstItem = scriptItems[0].content.trim()
-            if (firstItem.startsWith("#!/")) {
-                hasShebang = true
-            }
-        }
-        
-        // 如果没有shebang，添加默认的
-        if (!hasShebang) {
-            lines.add("#!/bin/bash")
-        }
-        
-        // 处理脚本项，合并if语句
-        var i = 0
-        while (i < scriptItems.size) {
-            val currentItem = scriptItems[i]
-            val currentContent = currentItem.content.trim()
-            
-            if (currentContent.isEmpty()) {
-                i++
-                continue
-            }
-            
-            // 检查是否为if或elif语句开始（支持无空格情况）
-            if (currentContent.startsWith("if") || currentContent.startsWith("elif")) {
-                val conditionParts = mutableListOf<String>()
-                conditionParts.add(currentContent)
-                var j = i + 1
-                
-                // 收集所有条件行，直到遇到then或; then
-                while (j < scriptItems.size) {
-                    val nextContent = scriptItems[j].content.trim()
-                    if (nextContent == "then" || nextContent == "; then") {
-                        break
-                    } else if (nextContent.isNotEmpty()) {
-                        conditionParts.add(nextContent)
+        val scriptBuilder = StringBuilder()
+        var isInIf = false
+        // 直接构建脚本，保持原始格式
+        for ((index, item) in scriptItems.withIndex()) {
+            val content = item.content.trim()
+            if (content.isNotEmpty()) {
+                Log.i("sc_spawn",content)
+                //判断if结构
+                if (content.startsWith("if") || content.startsWith("elif")) {
+                    if(!content.contains("then") && !content.contains(";then") && !content.contains("; then")){
+                        isInIf = true
                     }
-                    j++
                 }
-                
-                // 如果找到了then或; then，合并所有条件和then为一行
-                if (j < scriptItems.size && (scriptItems[j].content.trim() == "then" || scriptItems[j].content.trim() == "; then")) {
-                    val mergedCondition = conditionParts.joinToString(" ")
-                    // 确保if/elif后面有空格
-                    val normalizedCondition = when {
-                        mergedCondition.startsWith("if ") -> mergedCondition
-                        mergedCondition.startsWith("if") -> mergedCondition.replaceFirst("if", "if ")
-                        mergedCondition.startsWith("elif ") -> mergedCondition
-                        mergedCondition.startsWith("elif") -> mergedCondition.replaceFirst("elif", "elif ")
-                        else -> mergedCondition
-                    }
-                    val mergedLine = "$normalizedCondition; then"
-                    lines.add(mergedLine)
-                    Log.d("ScriptGenerate", "合并if语句: [${conditionParts.joinToString(", ")}, then] -> $mergedLine")
-                    i = j + 1 // 跳过所有已处理的行
-                } else {
-                    // 没有找到then，按原样添加
-                    lines.add(currentContent)
-                    i++
+
+
+                //处理换行
+                if(isInIf) scriptBuilder.append(" ") else scriptBuilder.append("\n")
+
+                scriptBuilder.append(content)
+
+                if(content.startsWith("#!")){
+                    scriptBuilder.append("\n")
                 }
-            } else {
-                // 普通行，直接添加
-                lines.add(currentContent)
-                i++
+                if (content.contains("then") || content.contains(";then") || content.contains("; then")){
+                    isInIf = false
+                }
+                if(!isInIf) scriptBuilder.append("\n")
             }
         }
-        
-        val result = lines.joinToString("\n")
-        Log.d("ScriptGenerate", "脚本生成完成，共 ${lines.size} 行")
-        return result
+
+        return "#!/bin/bash\n\n" + scriptBuilder.toString().replace("#!/bin/bash","")
     }
     
     // 拖动排序回调

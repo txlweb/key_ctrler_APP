@@ -36,4 +36,12 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
+    
+    <!-- 开屏主题 -->
+    <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- 全屏显示 -->
+        <item name="android:windowFullscreen">true</item>
+        <!-- 透明背景 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
 </resources>
