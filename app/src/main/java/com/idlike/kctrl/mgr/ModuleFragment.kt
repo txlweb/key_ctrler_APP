@@ -9,6 +9,7 @@ import android.view.ViewTreeObserver
 import android.widget.Switch
 import android.widget.Toast
 import kotlin.math.max
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -63,6 +64,7 @@ class ModuleFragment : Fragment() {
     private lateinit var btnExportLogConfig: MaterialButton
     // 保存和加载按钮已移除，配置现在会自动保存并立即生效
     private lateinit var deviceAdapter: DeviceAdapter
+    private lateinit var switchExclusiveMode: Switch
     private val deviceList = mutableListOf<DeviceItem>()
     private var isLoadingConfig = false // 标志位，防止配置加载时触发自动保存
     
@@ -123,7 +125,10 @@ class ModuleFragment : Fragment() {
                  } else {
                      // 服务未运行，显示提示并禁用功能
                      showServiceNotRunningMessage()
-                     disableFeatures()
+                     //disableFeatures()
+                     enableFeatures()
+                     loadConfig()
+                     
                  }
              }
         }.start()
@@ -142,6 +147,7 @@ class ModuleFragment : Fragment() {
         sliderLongPress.isEnabled = false
         sliderDoubleClick.isEnabled = false
         switchEnableLog.isEnabled = false
+        switchExclusiveMode.isEnabled = false
         btnImportConfig.isEnabled = false
         btnExportConfig.isEnabled = false
     }
@@ -153,6 +159,7 @@ class ModuleFragment : Fragment() {
         sliderLongPress.isEnabled = true
         sliderDoubleClick.isEnabled = true
         switchEnableLog.isEnabled = true
+        switchExclusiveMode.isEnabled = true
         btnImportConfig.isEnabled = true
         btnExportConfig.isEnabled = true
     }
@@ -232,6 +239,7 @@ class ModuleFragment : Fragment() {
         labelLongPress = view.findViewById(R.id.label_long_press)
         labelExtra = view.findViewById(R.id.label_extra)
         switchEnableLog = view.findViewById(R.id.switch_enable_log)
+        switchExclusiveMode = view.findViewById(R.id.switch_exclusive_mode)
         llCpuCheckboxes = view.findViewById(R.id.ll_cpu_checkboxes)
         tvCpuCoresInfo = view.findViewById(R.id.tv_cpu_cores_info)
         btnImportConfig = view.findViewById(R.id.btn_import_config)
@@ -712,7 +720,73 @@ class ModuleFragment : Fragment() {
                 android.util.Log.d("ModuleFragment", "跳过开关触发的保存，正在加载配置中")
             }
         }
+
+        // 独占模式开关监听器
+        switchExclusiveMode.setOnCheckedChangeListener { _, isChecked ->
+            if (!isLoadingConfig) {
+                if (isChecked) {
+                    // 先保存配置：udevice=1, odevice=0
+                    saveConfigWithExclusiveMode(false)
+                    
+                    // 显示倒计时确认对话框
+                    val countdownDialog = AlertDialog.Builder(requireContext())
+                        .setTitle("⚠️ 独占模式确认")
+                        .setMessage("启用独占模式后，本程序将独占已经选中的设备，系统将无法使用这些设备！！！\n\n⚠️ 警告：设备选择不当时有损坏设备的风险！！\n\n 免责声明：作者不对因本功能导致的任何设备损坏负责，设备是你自己选的，有问题请自行解决，不要找作者！\n\n请在10秒内确认是否启用：\n\n倒计时：10秒")
+                        .setPositiveButton("确认启用") { _, _ ->
+                            // 用户确认，设置odevice=1并重启服务
+                            saveConfigWithExclusiveMode(true)
+                            restartService()
+                        }
+                        .setNegativeButton("取消") { _, _ ->
+                            // 用户取消，恢复开关状态并重置配置
+                            switchExclusiveMode.isChecked = false
+                            saveConfigWithExclusiveMode(false)
+                        }
+                        .setCancelable(false)
+                        .create()
+                    
+                    // 设置倒计时更新
+                    countdownDialog.setOnShowListener {
+                        val handler = android.os.Handler(android.os.Looper.getMainLooper())
+                        val countdownRunnable = object : Runnable {
+                            var count = 10
+                            override fun run() {
+                                if (countdownDialog.isShowing && count > 0) {
+                                    countdownDialog.setMessage("启用独占模式后，系统将独占访问输入设备，其他应用将无法使用这些设备。\n\n⚠️ 警告：此选项在搭配不适当时有损坏设备的风险。\n\n请在10秒内确认是否启用：\n\n倒计时：${count}秒")
+                                    count--
+                                    handler.postDelayed(this, 1000)
+                                } else if (countdownDialog.isShowing && count == 0) {
+                                    // 超时自动取消
+                                    countdownDialog.dismiss()
+                                    switchExclusiveMode.isChecked = false
+                                    saveConfigWithExclusiveMode(false)
+                                    
+                                    context?.let {
+                                        Toast.makeText(it, "操作超时，已自动取消", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            }
+                        }
+                        handler.post(countdownRunnable)
+                    }
+                    
+                    countdownDialog.show()
+                } else {
+                    // 关闭独占模式，直接保存
+                    saveConfig()
+                }
+            } else {
+                android.util.Log.d("ModuleFragment", "跳过独占模式开关触发的保存，正在加载配置中")
+            }
+        }
         
+        // 了解作用机理按钮点击监听器
+        view?.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_understand_exclusive_mode)
+            ?.setOnClickListener {
+                val intent = Intent(requireContext(), ExclusiveModeInfoActivity::class.java)
+                startActivity(intent)
+            }
+
         // 导入导出按钮点击监听器
         btnImportConfig.setOnClickListener {
             importConfig()
@@ -733,6 +807,46 @@ class ModuleFragment : Fragment() {
         } else {
             android.util.Log.d("ModuleFragment", "跳过自动保存，正在加载配置中")
         }
+    }
+
+    private fun restartService() {
+        val mainActivity = activity as? MainActivity ?: return
+        
+        if (!mainActivity.hasSuPermission()) {
+            context?.let {
+                Toast.makeText(it, "无Root权限，无法重启服务", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        
+        // 先保存配置，确保udevice参数被正确设置
+        saveConfig()
+        
+        // 显示重启中的提示
+        context?.let {
+            Toast.makeText(it, "正在重启服务以应用独占模式配置...", Toast.LENGTH_SHORT).show()
+        }
+        
+        // 异步执行重启操作
+        Thread {
+            val success = mainActivity.restartKctrlService()
+            
+            // 在主线程更新UI
+            activity?.runOnUiThread {
+                if (success) {
+                    context?.let {
+                        Toast.makeText(it, "服务重启成功，独占模式已生效", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    context?.let {
+                        Toast.makeText(it, "服务重启失败，请手动重启", Toast.LENGTH_SHORT).show()
+                    }
+                    // 重启失败时，重置开关状态
+                    switchExclusiveMode.isChecked = false
+                    saveConfig()
+                }
+            }
+        }.start()
     }
     
 
@@ -820,6 +934,7 @@ class ModuleFragment : Fragment() {
                     // 解析CPU亲和性配置，设置对应的CheckBox
                     setCpuAffinityFromConfig(value)
                 }
+                "udevice" -> switchExclusiveMode.isChecked = value == "1"
             }
         }
         
@@ -1151,6 +1266,15 @@ class ModuleFragment : Fragment() {
                 "0" // 默认使用CPU0
             }
             configBuilder.append("cpu_affinity=$cpuAffinityValue\n")
+            configBuilder.append("\n")
+            
+            // 独占模式配置
+            configBuilder.append("# 独占模式配置\n")
+            configBuilder.append("# 启用后，系统将独占访问输入设备，其他应用将无法使用这些设备\n")
+            configBuilder.append("# 警告：此选项在搭配不适当时有损坏设备的风险\n")
+            configBuilder.append("# 1 = 启用独占模式，0 = 禁用独占模式\n")
+            configBuilder.append("udevice=${if (switchExclusiveMode.isChecked) "1" else "0"}\n")
+            configBuilder.append("odevice=${if (switchExclusiveMode.isChecked) "0" else "0"}\n")
             
             // 保留现有的按键配置
             if (keyConfigLines.isNotEmpty()) {
@@ -1172,6 +1296,141 @@ class ModuleFragment : Fragment() {
                         context?.let {
                 Toast.makeText(it, "配置保存失败", Toast.LENGTH_SHORT).show()
             }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun saveConfigWithExclusiveMode(confirmEnabled: Boolean) {
+        val mainActivity = activity as? MainActivity
+        
+        // 先读取当前配置文件，保留按键配置
+        mainActivity?.readConfigFileAsync { currentConfig ->
+            val configContent = currentConfig ?: ""
+            
+            // 解析现有配置，保留按键配置（script_开头的行）
+            val lines = configContent.split("\n").toMutableList()
+            val keyConfigLines = lines.filter { line ->
+                val trimmed = line.trim()
+                trimmed.startsWith("script_") && trimmed.contains("=")
+            }
+            
+            // 构建新的配置内容
+            val configBuilder = StringBuilder()
+            
+            // 添加注释和说明
+            configBuilder.append("# KCTRL 系统配置\n")
+            configBuilder.append("# 格式: key=value\n")
+            configBuilder.append("# 以#开头的行为注释\n")
+            configBuilder.append("\n")
+            
+            // 设备配置
+            val selectedDevices = deviceList.filter { it.isSelected }
+            if (selectedDevices.isNotEmpty()) {
+                configBuilder.append("# 要监听的输入设备\n")
+                configBuilder.append("# 支持多个设备，用|分隔符隔开\n")
+                configBuilder.append("# 设备名用双引号包围，设备路径直接使用\n")
+                
+                // 处理同名设备的配置保存
+                val deviceNameGroups = selectedDevices.filter { it.useDeviceName }.groupBy { it.name }
+                val pathDevices = selectedDevices.filter { !it.useDeviceName }
+                
+                // 构建设备配置值列表
+                val deviceValues = mutableListOf<String>()
+                
+                // 添加使用名称模式的设备（同名设备只添加一次）
+                deviceNameGroups.forEach { (name, devices) ->
+                    deviceValues.add("\"$name\"")
+                    if (devices.size > 1) {
+                        configBuilder.append("# 设备名 '$name' 包含 ${devices.size} 个物理设备: ${devices.map { it.path }.joinToString(", ")}\n")
+                    }
+                }
+                
+                // 添加使用路径模式的设备
+                pathDevices.forEach { device ->
+                    deviceValues.add(device.path)
+                }
+                
+                val deviceValuesString = deviceValues.joinToString("|")
+                configBuilder.append("device=$deviceValuesString\n")
+            }
+            configBuilder.append("\n")
+            
+            // 时间配置
+            configBuilder.append("# 时间配置参数（毫秒）\n")
+            configBuilder.append("click_threshold=${sliderClick.value.toInt()}\n")
+            configBuilder.append("short_press_threshold=${sliderShortPress.value.toInt()}\n")
+            configBuilder.append("long_press_threshold=${sliderLongPress.value.toInt()}\n")
+            configBuilder.append("double_click_interval=${sliderDoubleClick.value.toInt()}\n")
+            configBuilder.append("\n")
+            
+            // 日志配置
+            configBuilder.append("# 日志开关配置\n")
+            configBuilder.append("enable_log=${if (switchEnableLog.isChecked) "1" else "0"}\n")
+            configBuilder.append("\n")
+            
+            // CPU亲和性配置
+            configBuilder.append("# CPU亲和性配置（可选）\n")
+            configBuilder.append("# 指定程序运行在哪些CPU核心上，用逗号分隔\n")
+            configBuilder.append("# 例如: cpu_affinity=0 表示只使用CPU0\n")
+            configBuilder.append("# 例如: cpu_affinity=0,1 表示使用CPU0和CPU1\n")
+            configBuilder.append("# 例如: cpu_affinity=2,3,4 表示使用CPU2、CPU3和CPU4\n")
+            configBuilder.append("# 如果不配置此项，默认使用CPU0\n")
+            val selectedCpuCores = cpuCheckBoxes.mapIndexedNotNull { index, checkBox ->
+                if (checkBox.isChecked) index else null
+            }
+            val cpuAffinityValue = if (selectedCpuCores.isNotEmpty()) {
+                selectedCpuCores.joinToString(",")
+            } else {
+                "0" // 默认使用CPU0
+            }
+            configBuilder.append("cpu_affinity=$cpuAffinityValue\n")
+            configBuilder.append("\n")
+            
+            // 独占模式配置 - 根据confirmEnabled参数设置
+            configBuilder.append("# 独占模式配置\n")
+            configBuilder.append("# 启用后，系统将独占访问输入设备，其他应用将无法使用这些设备\n")
+            configBuilder.append("# 警告：此选项在搭配不适当时有损坏设备的风险\n")
+            configBuilder.append("# 1 = 启用独占模式，0 = 禁用独占模式\n")
+            
+            if (switchExclusiveMode.isChecked) {
+                // 开关开启状态
+                if (confirmEnabled) {
+                    // 用户已确认，设置udevice=1, odevice=1
+                    configBuilder.append("udevice=1\n")
+                    configBuilder.append("odevice=1\n")
+                } else {
+                    // 初始状态，设置udevice=1, odevice=0
+                    configBuilder.append("udevice=1\n")
+                    configBuilder.append("odevice=0\n")
+                }
+            } else {
+                // 开关关闭，设置udevice=0, odevice=0
+                configBuilder.append("udevice=0\n")
+                configBuilder.append("odevice=0\n")
+            }
+            
+            // 保留现有的按键配置
+            if (keyConfigLines.isNotEmpty()) {
+                configBuilder.append("\n")
+                configBuilder.append("# 按键配置（由按键配置页面管理）\n")
+                keyConfigLines.forEach { line ->
+                    configBuilder.append("$line\n")
+                }
+            }
+            
+            // 使用异步的配置文件写入方法
+            mainActivity?.writeConfigFileAsync(configBuilder.toString()) { success ->
+                activity?.runOnUiThread {
+                    if (success) {
+                        context?.let {
+                            Toast.makeText(it, "配置保存成功", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        context?.let {
+                            Toast.makeText(it, "配置保存失败", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }

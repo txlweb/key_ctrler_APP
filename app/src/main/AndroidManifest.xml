@@ -93,6 +93,12 @@
             android:exported="false"
             android:theme="@style/Theme.Kctrl控制器"
             android:parentActivityName=".MainActivity" />
+            
+        <activity
+            android:name=".ExclusiveModeInfoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Kctrl控制器"
+            android:parentActivityName=".MainActivity" />
         
         <!-- 服务声明 -->
         <service

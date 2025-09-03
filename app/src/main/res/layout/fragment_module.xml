@@ -575,6 +575,73 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 独占模式配置 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="独占模式"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="启用后，本程序将独占访问输入设备，其他应用和系统将无法使用这些设备。\n\n⚠️ 警告：此选项在设备路径选择不当[1]时有损坏设备的风险，请搭配有关闭模块功能的救砖模块使用！\n\n 开启后请测试屏幕触摸、电源键、音量键等是否无问题，出现问题请立即关闭服务并关闭本功能！ \n\n [1] ⚠️ 电源键、触摸屏、音量键等关键设备如选中也可以被程序独占，所以为了设备安全，请不要选中同时打开本项目！！！"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginBottom="16dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="启用独占模式"
+                        android:textSize="16sp" />
+
+                    <Switch
+                        android:id="@+id/switch_exclusive_mode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_understand_exclusive_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="了解作用机理"
+                    app:icon="@android:drawable/ic_dialog_info"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- 配置导入导出 -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"

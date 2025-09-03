@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<device-admin xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-policies>
+        <disable-keyguard-features />
+        <force-lock />
+        <watch-login />
+        <reset-password />
+        <limit-password />
+        <expire-password />
+    </uses-policies>
+</device-admin>

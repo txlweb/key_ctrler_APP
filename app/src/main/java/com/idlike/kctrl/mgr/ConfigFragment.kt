@@ -64,7 +64,9 @@ class ConfigFragment : Fragment() {
                  } else {
                      // 服务未运行，显示提示并禁用功能
                      showServiceNotRunningMessage()
-                     disableFeatures()
+//                     disableFeatures()
+                     enableFeatures()
+                     loadKeys()
                  }
              }
         }.start()

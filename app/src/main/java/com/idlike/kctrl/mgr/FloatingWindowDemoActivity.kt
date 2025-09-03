@@ -31,6 +31,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.DynamicColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -40,7 +44,8 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
     private lateinit var toolbar: MaterialToolbar
     private lateinit var etCustomText: EditText
     private lateinit var spinnerIcon: Spinner
-    private lateinit var spinnerWidth: Spinner
+    private lateinit var sliderWidth: com.google.android.material.slider.Slider
+    private lateinit var etWidth: EditText
     private lateinit var btnShowCustom: MaterialButton
     private lateinit var btnHideFloating: MaterialButton
     private lateinit var btnSelectImage: MaterialButton
@@ -51,6 +56,11 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
     private lateinit var etY: EditText
     private lateinit var rvCustomIcons: RecyclerView
     private lateinit var customIconAdapter: CustomIconAdapter
+    private lateinit var sbX: com.google.android.material.slider.Slider
+    private lateinit var sbY: com.google.android.material.slider.Slider
+    
+    private var screenWidth = 0
+    private var screenHeight = 0
     
     private var customIconPath: String? = null
     private var customIconBase64: String? = null // 保留旧字段用于清理
@@ -112,7 +122,8 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         toolbar = findViewById(R.id.toolbar)
         etCustomText = findViewById(R.id.et_custom_text)
         spinnerIcon = findViewById(R.id.spinner_icon)
-        spinnerWidth = findViewById(R.id.spinner_width)
+        sliderWidth = findViewById(R.id.slider_width)
+        etWidth = findViewById(R.id.et_width)
         btnShowCustom = findViewById(R.id.btn_show_custom)
         btnHideFloating = findViewById(R.id.btn_hide_floating)
         btnSelectImage = findViewById(R.id.btn_select_image)
@@ -122,6 +133,34 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         etX = findViewById(R.id.et_x)
         etY = findViewById(R.id.et_y)
         rvCustomIcons = findViewById(R.id.rv_custom_icons)
+        sbX = findViewById(R.id.sb_x)
+        sbY = findViewById(R.id.sb_y)
+        
+        // 获取屏幕尺寸
+        val displayMetrics = resources.displayMetrics
+        screenWidth = displayMetrics.widthPixels
+        screenHeight = displayMetrics.heightPixels
+        
+        // 设置滑块范围
+        sbX.valueFrom = -1f
+        sbX.valueTo = screenWidth.toFloat()
+        sbY.valueFrom = -1f
+        sbY.valueTo = screenHeight.toFloat()
+        
+        // 设置宽度滑块范围 (10dp 到屏幕宽度，转换为dp)
+        val density = displayMetrics.density
+        val maxWidthDp = (screenWidth / density).toInt()
+        sliderWidth.valueFrom = 10f
+        sliderWidth.valueTo = maxWidthDp.toFloat()
+        sliderWidth.value = 160f
+        
+        // 设置默认值为自动
+        etX.setText("-1")
+        etY.setText("-1")
+        etWidth.setText("160")
+        
+        // 初始化滑块值
+        updateSeekBarsFromEditText()
     }
     
     private fun setupToolbar() {
@@ -143,15 +182,6 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         )
         iconAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerIcon.adapter = iconAdapter
-        
-        // 设置宽度选择器
-        val widthAdapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            widthOptions.map { it.first }
-        )
-        widthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerWidth.adapter = widthAdapter
     }
     
     private fun setupClickListeners() {
@@ -288,6 +318,7 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 updateAmCommand()
+                updateFloatingWindow()
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
@@ -295,21 +326,37 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         spinnerIcon.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
                 updateAmCommand()
+                updateFloatingWindow()
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // 监听宽度选择器变化
-        spinnerWidth.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
-                updateAmCommand()
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        // 监听宽度滑块变化
+        sliderWidth.addOnChangeListener { _, value, _ ->
+            etWidth.setText(value.toInt().toString())
+            updateAmCommand()
+            updateFloatingWindow()
         }
+
+        // 监听宽度输入框变化
+        etWidth.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val width = s.toString().toIntOrNull()
+                if (width != null && width in 10..(screenWidth / resources.displayMetrics.density).toInt()) {
+                    sliderWidth.value = width.toFloat()
+                }
+            }
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
 
         etX.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s.toString() != "-1" && s.toString() != "自动") {
+                    updateSeekBarsFromEditText()
+                }
+                updateFloatingWindow()
                 updateAmCommand()
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
@@ -318,10 +365,50 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         etY.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s.toString() != "-1" && s.toString() != "自动") {
+                    updateSeekBarsFromEditText()
+                }
+                updateFloatingWindow()
                 updateAmCommand()
             }
             override fun afterTextChanged(s: android.text.Editable?) {}
         })
+
+        etX.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val text = etX.text.toString()
+                if (text == "-1") {
+                    etX.setText("自动")
+                }
+            }
+        }
+
+        etY.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                val text = etY.text.toString()
+                if (text == "-1") {
+                    etY.setText("自动")
+                }
+            }
+        }
+        
+        sbX.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val intValue = value.toInt()
+                val textValue = if (intValue == -1) "-1" else intValue.toString()
+                etX.setText(textValue)
+                updateFloatingWindow()
+            }
+        }
+        
+        sbY.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                val intValue = value.toInt()
+                val textValue = if (intValue == -1) "-1" else intValue.toString()
+                etY.setText(textValue)
+                updateFloatingWindow()
+            }
+        }
         
         // 点击AM命令文本框复制到剪贴板
         etAmCommand.setOnClickListener {
@@ -344,22 +431,75 @@ class FloatingWindowDemoActivity : AppCompatActivity() {
         val customText = etCustomText.text.toString().ifEmpty { "自定义悬浮窗" }
         val selectedIconIndex = spinnerIcon.selectedItemPosition
         val iconId = iconOptions[selectedIconIndex].second
-        val selectedWidthIndex = spinnerWidth.selectedItemPosition
-        val widthDp = widthOptions[selectedWidthIndex].second
+        val widthDp = etWidth.text.toString().toIntOrNull() ?: 160
         val x = etX.text.toString().toIntOrNull() ?: -1
         val y = etY.text.toString().toIntOrNull() ?: -1
         
         FloatingWindowManager.startFloatingWindow(this, customText, iconId, widthDp, x, y, customIconPath)
+    }
+
+    private fun updateSeekBarsFromEditText() {
+        val x = etX.text.toString().toIntOrNull()
+        val y = etY.text.toString().toIntOrNull()
+        
+        x?.let {
+            when {
+                it == -1 -> sbX.value = -1f
+                it in -1..screenWidth -> sbX.value = it.toFloat()
+            }
+        }
+        y?.let {
+            when {
+                it == -1 -> sbY.value = -1f
+                it in -1..screenHeight -> sbY.value = it.toFloat()
+            }
+        }
+    }
+    
+    private var updateJob: kotlinx.coroutines.Job? = null
+    
+    private fun updateFloatingWindow() {
+        // 取消之前的更新任务
+        updateJob?.cancel()
+        
+        // 立即更新悬浮窗，无延迟
+        updateJob = kotlinx.coroutines.GlobalScope.launch {
+            withContext(kotlinx.coroutines.Dispatchers.Main) {
+                val customText = etCustomText.text.toString().ifEmpty { "自定义悬浮窗" }
+                val selectedIconIndex = spinnerIcon.selectedItemPosition
+                val iconId = iconOptions[selectedIconIndex].second
+                val widthDp = etWidth.text.toString().toIntOrNull() ?: 160
+                val xText = etX.text.toString()
+                val yText = etY.text.toString()
+                
+                // 处理自动值
+                val x = if (xText == "自动") -1 else xText.toIntOrNull() ?: -1
+                val y = if (yText == "自动") -1 else yText.toIntOrNull() ?: -1
+                
+                FloatingWindowManager.updateFloatingWindow(
+                    this@FloatingWindowDemoActivity,
+                    customText,
+                    iconId,
+                    widthDp,
+                    x,
+                    y,
+                    customIconPath
+                )
+            }
+        }
     }
     
     private fun updateAmCommand() {
         val customText = etCustomText.text.toString().ifEmpty { "KCtrl 控制器" }
         val selectedIconIndex = spinnerIcon.selectedItemPosition
         val iconName = iconOptions[selectedIconIndex].first
-        val selectedWidthIndex = spinnerWidth.selectedItemPosition
-        val widthDp = widthOptions[selectedWidthIndex].second
-        val x = etX.text.toString().toIntOrNull() ?: -1
-        val y = etY.text.toString().toIntOrNull() ?: -1
+        val widthDp = etWidth.text.toString().toIntOrNull() ?: 160
+        val xText = etX.text.toString()
+        val yText = etY.text.toString()
+        
+        // 处理自动值
+        val x = if (xText == "自动") -1 else xText.toIntOrNull() ?: -1
+        val y = if (yText == "自动") -1 else yText.toIntOrNull() ?: -1
 
         // 生成AM命令
         val packageName = packageName

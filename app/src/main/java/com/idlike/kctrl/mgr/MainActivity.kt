@@ -587,7 +587,7 @@ class MainActivity : AppCompatActivity() {
                         message,
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
-                    viewPager.setCurrentItem(0, true)
+                    //viewPager.setCurrentItem(0, true)
                 }
             }
         })

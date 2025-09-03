@@ -17,6 +17,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.zip.ZipInputStream
+import android.util.Base64 as AndroidBase64
 
 class StatusFragment : Fragment() {
     private lateinit var tvStatus: TextView
@@ -31,6 +32,7 @@ class StatusFragment : Fragment() {
     private lateinit var btnStart: com.google.android.material.button.MaterialButton
     private lateinit var btnStop: com.google.android.material.button.MaterialButton
     private lateinit var btnRestart: com.google.android.material.button.MaterialButton
+    private lateinit var btnDiagnose: com.google.android.material.button.MaterialButton
     private lateinit var btnShowFloating: com.google.android.material.button.MaterialButton
     private lateinit var btnHideFloating: com.google.android.material.button.MaterialButton
     private lateinit var btnFloatingDemo: com.google.android.material.button.MaterialButton
@@ -66,6 +68,7 @@ class StatusFragment : Fragment() {
         btnStart = view.findViewById(R.id.btn_start)
         btnStop = view.findViewById(R.id.btn_stop)
         btnRestart = view.findViewById(R.id.btn_restart)
+        btnDiagnose = view.findViewById(R.id.btn_diagnose)
         btnShowFloating = view.findViewById(R.id.btn_show_floating)
         btnHideFloating = view.findViewById(R.id.btn_hide_floating)
         btnFloatingDemo = view.findViewById(R.id.btn_floating_demo)
@@ -90,6 +93,10 @@ class StatusFragment : Fragment() {
         
         btnRestart.setOnClickListener {
             restartKctrl()
+        }
+
+        btnDiagnose.setOnClickListener {
+            diagnoseModule()
         }
         
         btnShowFloating.setOnClickListener {
@@ -345,6 +352,66 @@ class StatusFragment : Fragment() {
                 mainActivity.updateServiceStatus()
             }
         }.start()
+    }
+
+    private fun diagnoseModule() {
+        val mainActivity = activity as? MainActivity ?: return
+
+        if (!mainActivity.hasSuPermission()) {
+            context?.let {
+                android.widget.Toast.makeText(it, "无Root权限，无法执行诊断", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        context?.let {
+            android.widget.Toast.makeText(it, "正在执行设备诊断...", android.widget.Toast.LENGTH_SHORT).show()
+        }
+
+        Thread {
+            try {
+                // 使用base64编码的Shell脚本，避免转义问题
+                val base64Script = "IyEvc3lzdGVtL2Jpbi9zaAoKIyBLQ1RSTCDorr7lpIfor4rmlq3ohJrmnKwKIyDnlKjkuo7or4rmlq3orr7lpIfnm5HlkKzpl67popjnmoTlt6XlhbcKCmVjaG8gIj09PSBLQ1RSTCDorr7lpIfor4rmlq3lt6XlhbcgPT09IgplY2hvICLmo4Dmn6Xorr7lpIfnirbmgIHlkozmnYPpmZAuLi4iCmVjaG8gIiIKCiMg5qOA5p+lcm9vdOadg+mZkAplY2hvICIxLiDmo4Dmn6VSb2905p2D6ZmQOiIKaWYgWyAiJChpZCAtdSkiIC1lcSAwIF07IHRoZW4KICAgIGVjaG8gIiAgIOKchSDlt7Lojrflj5ZSb2905p2D6ZmQIgplbHNlCiAgICBlY2hvICIgICDinYwg5pyq6I635Y+WUm9vdOadg+mZkO+8jOivt+S9v+eUqHN15oiWc3Vkb+i/kOihjCIKZmkKZWNobyAiIgoKIyDmo4Dmn6UvZGV2L2lucHV055uu5b2VCmVjaG8gIjIuIOajgOafpei+k+WFpeiuvuWkh+ebruW9lToiCmlmIFsgLWQgIi9kZXYvaW5wdXQiIF07IHRoZW4KICAgIGVjaG8gIiAgIOKchSAvZGV2L2lucHV055uu5b2V5a2Y5ZyoIgogICAgZWNobyAiICAg5Y+R546w5Lul5LiL6K6+5aSHOiIKICAgIGxzIC1sYSAvZGV2L2lucHV0L2V2ZW50KiAyPi9kZXYvbnVsbCB8IHdoaWxlIHJlYWQgbGluZTsgZG8KICAgICAgICBlY2hvICIgICAgICAkbGluZSIKICAgIGRvbmUKZWxzZQogICAgZWNobyAiICAg4p2MIC9kZXYvaW5wdXTnm67lvZXkuI3lrZjlnKgiCmZpCmVjaG8gIiIKCiMg5qOA5p+l6K6+5aSH5p2D6ZmQCmVjaG8gIjMuIOajgOafpeiuvuWkh+adg+mZkDoiCmZvciBkZXZpY2UgaW4gL2Rldi9pbnB1dC9ldmVudCo7IGRvCiAgICBpZiBbIC1lICIkZGV2aWNlIiBdOyB0aGVuCiAgICAgICAgaWYgWyAtciAiJGRldmljZSIgXTsgdGhlbgogICAgICAgICAgICBlY2hvICIgICDinIUgJGRldmljZSAtIOWPr+ivuyIKICAgICAgICBlbHNlCiAgICAgICAgICAgIGVjaG8gIiAgIOKdjCAkZGV2aWNlIC0g5LiN5Y+v6K+7IgogICAgICAgIGZpCiAgICBmaQpkb25lCmVjaG8gIiIKCiMg5qOA5p+l6K6+5aSH5L+h5oGvCmVjaG8gIjQuIOajgOafpeiuvuWkh+S/oeaBrzoiCmVjaG8gIiAgIOS9v+eUqGdldGV2ZW50IC1s5p+l55yL6K6+5aSHOiIKZ2V0ZXZlbnQgLWwgMj4vZGV2L251bGwgfCBoZWFkIC0yMAplY2hvICIiCgojIOajgOafpeiuvuWkh+acieaViOaApwplY2hvICI0YS4g6aqM6K+B6K6+5aSH5pyJ5pWI5oCnOiIKZm9yIGRldmljZSBpbiAvZGV2L2lucHV0L2V2ZW50KjsgZG8KICAgIGlmIFsgLWUgIiRkZXZpY2UiIF07IHRoZW4KICAgICAgICBpZiBbIC1jICIkZGV2aWNlIiBdOyB0aGVuCiAgICAgICAgICAgIGVjaG8gIiAgIOKchSAkZGV2aWNlIC0g5piv5a2X56ym6K6+5aSHIgogICAgICAgIGVsc2UKICAgICAgICAgICAgZWNobyAiICAg4p2MICRkZXZpY2UgLSDkuI3mmK/lrZfnrKborr7lpIciCiAgICAgICAgICAgIGNvbnRpbnVlCiAgICAgICAgZmkKICAgICAgICAKICAgICAgICAjIOS9v+eUqGdldGV2ZW506aqM6K+B6K6+5aSH5piv5ZCm5Y+v5Lul5q2j5bi46K+75Y+WCiAgICAgICAgaWYgdGltZW91dCAycyBnZXRldmVudCAiJGRldmljZSIgMj4vZGV2L251bGwgfCBoZWFkIC0xID4gL2Rldi9udWxsOyB0aGVuCiAgICAgICAgICAgIGVjaG8gIiAgIOKchSAkZGV2aWNlIC0g5Y+v5Lul5q2j5bi46K+75Y+W6L6T5YWl5LqL5Lu2IgogICAgICAgIGVsc2UKICAgICAgICAgICAgZWNobyAiICAg4p2MICRkZXZpY2UgLSDml6Dms5Xor7vlj5bovpPlhaXkuovku7YgKOWPr+iDveaYr+adg+mZkOaIluiuvuWkh+mXrumimCkiCiAgICAgICAgICAgIAogICAgICAgICAgICAjIOajgOafpeWFt+S9k+mUmeivrwogICAgICAgICAgICBpZiBbICEgLXIgIiRkZXZpY2UiIF07IHRoZW4KICAgICAgICAgICAgICAgIGVjaG8gIiAgICAgIOWOn+WboDog5p2D6ZmQ5LiN6Laz77yM5b2T5YmN55So5oi35peg5rOV6K+75Y+WIgogICAgICAgICAgICBlbGlmIFsgIiQoc3RhdCAtYyAnJXQnICIkZGV2aWNlIiAyPi9kZXYvbnVsbCkiICE9ICJlIiBdOyB0aGVuCiAgICAgICAgICAgICAgICBlY2hvICIgICAgICDljp/lm6A6IOS4jeaYr+acieaViOeahOi+k+WFpeiuvuWkhyIKICAgICAgICAgICAgZWxzZQogICAgICAgICAgICAgICAgZWNobyAiICAgICAg5Y6f5ZugOiDorr7lpIflj6/og73ooqvljaDnlKjmiJbml6DmlYgiCiAgICAgICAgICAgIGZpCiAgICAgICAgZmkKICAgIGZpCmRvbmUKZWNobyAiIgoKIyDmo4Dmn6UvcHJvYy9idXMvaW5wdXQvZGV2aWNlcwplY2hvICI1LiDmo4Dmn6UvcHJvYy9idXMvaW5wdXQvZGV2aWNlczoiCmlmIFsgLXIgIi9wcm9jL2J1cy9pbnB1dC9kZXZpY2VzIiBdOyB0aGVuCiAgICBlY2hvICIgICDinIUgL3Byb2MvYnVzL2lucHV0L2RldmljZXPlj6/or7siCiAgICBlY2hvICIgICDorr7lpIfliJfooag6IgogICAgY2F0IC9wcm9jL2J1cy9pbnB1dC9kZXZpY2VzIHwgZ3JlcCAtRSAiXk46fF5IOiIgfCBoZWFkIC0xMAplbHNlCiAgICBlY2hvICIgICDinYwgL3Byb2MvYnVzL2lucHV0L2RldmljZXPkuI3lj6/or7siCmZpCmVjaG8gIiIKCiMg5qOA5p+l6L+b56iL54q25oCBCmVjaG8gIjYuIOajgOafpUtDVFJM6L+b56iLOiIKaWYgcGdyZXAgLWYgImtjdHJsIiA+IC9kZXYvbnVsbDsgdGhlbgogICAgZWNobyAiICAg4pqg77iPICDlj5HnjrBrY3RybOi/m+eoi+ato+WcqOi/kOihjDoiCiAgICBwcyB8IGdyZXAga2N0cmwKICAgIGVjaG8gIiAgIOWmgumcgOWBnOatou+8jOivt+aJp+ihjDogcGtpbGwgLWYga2N0cmwiCmVsc2UKICAgIGVjaG8gIiAgIOKchSDmnKrlj5HnjrBrY3RybOi/m+eoi+i/kOihjCIKZmkKZWNobyAiIgoKIyDmo4Dmn6XmqKHlnZfnm67lvZUKZWNobyAiNy4g5qOA5p+l5qih5Z2X55uu5b2VOiIKaWYgWyAtZCAiL2RhdGEvYWRiL21vZHVsZXMva2N0cmwiIF07IHRoZW4KICAgIGVjaG8gIiAgIOKchSDmqKHlnZfnm67lvZXlrZjlnKg6IC9kYXRhL2FkYi9tb2R1bGVzL2tjdHJsIgogICAgZWNobyAiICAg6YWN572u5paH5Lu2OiIKICAgIGxzIC1sYSAvZGF0YS9hZGIvbW9kdWxlcy9rY3RybC9jb25maWcudHh0IDI+L2Rldi9udWxsIHx8IGVjaG8gIiAgIOKdjCDphY3nva7mlofku7bkuI3lrZjlnKgiCmVsc2UKICAgIGVjaG8gIiAgIOKdjCDmqKHlnZfnm67lvZXkuI3lrZjlnKgiCmZpCmVjaG8gIiIKCmVjaG8gIj09PSDor4rmlq3lrozmiJAgPT09IgplY2hvICIiCmVjaG8gIuW4uOingemXrumimOino+WGszoiCmVjaG8gIjEuIOWmguaenOiuvuWkh+S4jeWPr+ivuzog5qOA5p+l5paH5Lu25p2D6ZmQ5oiW5L2/55SoY2htb2Tkv67mlLkiCmVjaG8gIjIuIOWmguaenOiuvuWkh+S4jeWtmOWcqDog5qOA5p+l6K6+5aSH6Lev5b6E5piv5ZCm5q2j56GuIgplY2hvICIzLiDlpoLmnpzor7vlj5bplJnor686IOWwneivleS9v+eUqOS4jeWQjOeahGV2ZW506K6+5aSHIgplY2hvICI0LiDmn6XnnIvml6Xlv5c6IGxvZ2NhdCB8IGdyZXAgS0NUUkwi"
+                val scriptContent = String(AndroidBase64.decode(base64Script, AndroidBase64.DEFAULT))
+
+                val scriptFile = File(requireContext().cacheDir, "kctrl_diagnostic.sh")
+                scriptFile.writeText(scriptContent)
+                scriptFile.setExecutable(true)
+
+                val command = "su -c 'sh ${scriptFile.absolutePath}'"
+                val result = mainActivity.executeRootCommand(command)
+
+                activity?.runOnUiThread {
+                    if (result != null) {
+                        showDiagnosticResult(result)
+                    } else {
+                        android.widget.Toast.makeText(context, "诊断执行失败", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                activity?.runOnUiThread {
+                    android.widget.Toast.makeText(context, "诊断脚本执行出错: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun showDiagnosticResult(result: String) {
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("设备诊断结果")
+            .setMessage(result)
+            .setPositiveButton("复制结果") { _, _ ->
+                val clipboard = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                val clip = android.content.ClipData.newPlainText("诊断结果", result)
+                clipboard.setPrimaryClip(clip)
+                android.widget.Toast.makeText(context, "结果已复制到剪贴板", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("关闭", null)
+            .setCancelable(false)
+            .create()
+        
+        dialog.show()
     }
     
     private fun hotUpdateModule() {

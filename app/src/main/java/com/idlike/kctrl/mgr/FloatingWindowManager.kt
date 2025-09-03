@@ -95,8 +95,15 @@ class FloatingWindowManager {
          */
         fun updateFloatingWindow(context: Context, text: String, iconId: Int = R.drawable.ic_config, widthDp: Int = 160, x: Int = -1, y: Int = -1, customIconPath: String? = null) {
             if (hasOverlayPermission(context)) {
-                val intent = Intent(context, FloatingWindowService::class.java).apply {
-                    action = FloatingWindowService.ACTION_UPDATE
+                // 先隐藏悬浮窗
+                val hideIntent = Intent(context, FloatingWindowService::class.java).apply {
+                    action = FloatingWindowService.ACTION_HIDE
+                }
+                context.startService(hideIntent)
+                
+                // 立即重新显示悬浮窗，确保更新生效
+                val showIntent = Intent(context, FloatingWindowService::class.java).apply {
+                    action = FloatingWindowService.ACTION_SHOW
                     putExtra(FloatingWindowService.EXTRA_TEXT, text)
                     putExtra(FloatingWindowService.EXTRA_ICON_ID, iconId)
                     putExtra(FloatingWindowService.EXTRA_WIDTH, widthDp)
@@ -104,7 +111,7 @@ class FloatingWindowManager {
                     putExtra(FloatingWindowService.EXTRA_Y, y)
                     customIconPath?.let { putExtra(FloatingWindowService.EXTRA_CUSTOM_ICON_PATH, it) }
                 }
-                context.startService(intent)
+                context.startForegroundService(showIntent)
             }
         }
         

@@ -178,49 +178,126 @@
                         android:textColor="?attr/colorOnSurfaceVariant"
                         android:layout_marginBottom="8dp" />
 
-                    <Spinner
-                        android:id="@+id/spinner_width"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp" />
-
-                    <!-- X/Y坐标 -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:orientation="horizontal">
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
-                        <com.google.android.material.textfield.TextInputLayout
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/slider_width"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
+                            android:layout_marginEnd="8dp"
+                            android:valueFrom="10"
+                            android:valueTo="1000"
+                            android:value="160"
+                            android:stepSize="1"
+                            android:theme="@style/ThemeOverlay.Material3.DynamicColors.DayNight" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/et_width"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="宽度"
+                                android:inputType="number"
+                                android:text="160"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <!-- X坐标 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="X坐标"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sb_x"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginEnd="8dp"
+                            android:valueFrom="-1"
+                            android:valueTo="1000"
+                            android:value="-1"
+                            android:theme="@style/ThemeOverlay.Material3.DynamicColors.DayNight" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_x"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="X坐标"
+                                android:hint="X"
                                 android:inputType="numberSigned"
-                                android:text="-1" />
+                                android:text="-1"
+                                android:textSize="12sp" />
                         </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
+                    <!-- Y坐标 -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Y坐标"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:layout_marginBottom="8dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <com.google.android.material.slider.Slider
+                            android:id="@+id/sb_y"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="4dp"
+                            android:layout_marginEnd="8dp"
+                            android:valueFrom="-1"
+                            android:valueTo="1000"
+                            android:value="-1"
+                            android:theme="@style/ThemeOverlay.Material3.DynamicColors.DayNight" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="80dp"
+                            android:layout_height="wrap_content"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/et_y"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:hint="Y坐标"
+                                android:hint="Y"
                                 android:inputType="numberSigned"
-                                android:text="-1" />
+                                android:text="-1"
+                                android:textSize="12sp" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
 
