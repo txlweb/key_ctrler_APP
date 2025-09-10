@@ -799,6 +799,50 @@ class ModuleFragment : Fragment() {
         btnExportLogConfig.setOnClickListener {
             exportLogConfig()
         }
+
+        // 清理xposedEdge残留按钮点击监听器
+        view?.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_clean_xposed_edge)
+            ?.setOnClickListener {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("确认清理")
+                    .setMessage("确定要清理xposedEdge的残留配置文件吗？\n\n这将删除：\n/data/system/xedge 目录下的所有文件")
+                    .setPositiveButton("确认清理") { _, _ ->
+                        try {
+                            val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "rm -rf /data/system/xedge"))
+                            val exitCode = process.waitFor()
+                            
+                            if (exitCode == 0) {
+                                Toast.makeText(context, "清理成功！xposedEdge残留已清除", Toast.LENGTH_SHORT).show()
+                            } else {
+                                Toast.makeText(context, "清理失败！请检查Root权限", Toast.LENGTH_SHORT).show()
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "清理出错：${e.message}", Toast.LENGTH_SHORT).show()
+                            e.printStackTrace()
+                        }
+                    }
+                    .setNegativeButton("取消", null)
+                    .show()
+            }
+
+        // 完全卸载按钮点击监听器
+        view?.findViewById<com.google.android.material.button.MaterialButton>(R.id.btn_uninstall_all)
+            ?.setOnClickListener {
+                AlertDialog.Builder(requireContext())
+                    .setTitle("⚠️ 完全卸载确认")
+                    .setMessage("此操作将：\n\n" +
+                            "1. 删除kctrl模块 (/data/adb/modules/kctrl)\n" +
+                            "2. 卸载本应用\n" +
+                            "3. 删除所有配置文件\n" +
+                            "4. 此操作不可恢复！\n\n" +
+                            "确定要继续吗？")
+                    .setPositiveButton("确定卸载") { _, _ ->
+                        uninstallAll()
+                    }
+                    .setNegativeButton("取消", null)
+                    .setCancelable(false)
+                    .show()
+            }
     }
     
     private val autoSaveRunnable = Runnable {
@@ -874,6 +918,49 @@ class ModuleFragment : Fragment() {
                     isLoadingConfig = false
                     android.util.Log.d("ModuleFragment", "配置加载完成，已重新启用自动保存")
                 }, 1000)
+            }
+        }
+    }
+
+    private fun uninstallAll() {
+        try {
+            // 1. 删除kctrl模块
+            val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "rm -rf /data/adb/modules/kctrl"))
+            val exitCode = process.waitFor()
+            
+            if (exitCode == 0) {
+                Toast.makeText(context, "模块删除成功！", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "模块删除失败！请检查Root权限", Toast.LENGTH_SHORT).show()
+                return
+            }
+            
+            // 2. 卸载本应用
+            val packageName = requireContext().packageName
+            val uninstallProcess = Runtime.getRuntime().exec(arrayOf("su", "-c", "pm uninstall $packageName"))
+            val uninstallExitCode = uninstallProcess.waitFor()
+            
+            if (uninstallExitCode == 0) {
+                Toast.makeText(context, "应用卸载成功！", Toast.LENGTH_SHORT).show()
+            } else {
+                // 如果pm uninstall失败，尝试使用am start卸载
+                val intent = Intent(Intent.ACTION_DELETE)
+                intent.data = android.net.Uri.parse("package:$packageName")
+                startActivity(intent)
+            }
+            
+        } catch (e: Exception) {
+            Toast.makeText(context, "卸载出错：${e.message}", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
+            
+            // 降级处理：打开系统卸载界面
+            try {
+                val packageName = requireContext().packageName
+                val intent = Intent(Intent.ACTION_DELETE)
+                intent.data = android.net.Uri.parse("package:$packageName")
+                startActivity(intent)
+            } catch (e2: Exception) {
+                Toast.makeText(context, "请手动到系统设置中卸载应用", Toast.LENGTH_LONG).show()
             }
         }
     }

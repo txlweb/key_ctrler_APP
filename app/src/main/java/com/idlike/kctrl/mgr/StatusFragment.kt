@@ -37,6 +37,7 @@ class StatusFragment : Fragment() {
     private lateinit var btnHideFloating: com.google.android.material.button.MaterialButton
     private lateinit var btnFloatingDemo: com.google.android.material.button.MaterialButton
     private lateinit var btnHotUpdate: com.google.android.material.button.MaterialButton
+    private lateinit var btnHotInstall: com.google.android.material.button.MaterialButton
     private lateinit var btnComponentExplorer: com.google.android.material.button.MaterialButton
     
     private val PICK_MODULE_FILE = 1001
@@ -73,6 +74,7 @@ class StatusFragment : Fragment() {
         btnHideFloating = view.findViewById(R.id.btn_hide_floating)
         btnFloatingDemo = view.findViewById(R.id.btn_floating_demo)
         btnHotUpdate = view.findViewById(R.id.btn_hot_update)
+        btnHotInstall = view.findViewById(R.id.btn_hot_install)
         btnComponentExplorer = view.findViewById(R.id.btn_component_explorer)
         
         setupClickListeners()
@@ -113,6 +115,10 @@ class StatusFragment : Fragment() {
         
         btnHotUpdate.setOnClickListener {
             hotUpdateModule()
+        }
+        
+        btnHotInstall.setOnClickListener {
+            hotUpdateModuleFromAssets()
         }
 
         btnComponentExplorer.setOnClickListener {
@@ -523,10 +529,14 @@ class StatusFragment : Fragment() {
                 return false
             }
             
-            // 先清理目标目录中除config.txt和scripts外的文件
+            // 先备份config.txt和scripts目录，然后清理目标目录
             val cleanCommands = listOf(
-                "find ${moduleDir.absolutePath} -type f -not -name \"config.txt\" -not -path \"*/scripts/*\" -delete",
-                "find ${moduleDir.absolutePath} -type d -empty -not -path \"*/scripts*\" -delete"
+                // 备份config.txt文件
+                "if [ -f ${moduleDir.absolutePath}/config.txt ]; then cp ${moduleDir.absolutePath}/config.txt ${moduleDir.absolutePath}/config.txt.bak; fi",
+                // 备份scripts目录
+                "if [ -d ${moduleDir.absolutePath}/scripts ]; then mv ${moduleDir.absolutePath}/scripts ${moduleDir.absolutePath}/scripts.bak; fi",
+                // 清理目标目录中的所有文件和目录
+                "rm -rf ${moduleDir.absolutePath}/*"
             )
             
             for (command in cleanCommands) {
@@ -535,7 +545,12 @@ class StatusFragment : Fragment() {
             
             // 复制文件（排除config.txt和scripts文件夹）
             val commands = listOf(
-                "find ${extractDir.absolutePath} -type f -not -name \"config.txt\" -not -path \"*/scripts/*\" -exec cp \"{}\" ${moduleDir.absolutePath}/ \\;",
+                // 使用cp -r命令保留目录结构
+                "cp -r ${extractDir.absolutePath}/* ${moduleDir.absolutePath}/",
+                // 如果存在config.txt，恢复原来的配置文件
+                "if [ -f ${moduleDir.absolutePath}/config.txt.bak ]; then mv ${moduleDir.absolutePath}/config.txt.bak ${moduleDir.absolutePath}/config.txt; fi",
+                // 如果存在scripts目录，恢复原来的scripts目录
+                "if [ -d ${moduleDir.absolutePath}/scripts.bak ]; then rm -rf ${moduleDir.absolutePath}/scripts && mv ${moduleDir.absolutePath}/scripts.bak ${moduleDir.absolutePath}/scripts; fi",
                 "chmod 755 ${moduleDir.absolutePath}",
                 "chmod 644 ${moduleDir.absolutePath}/module.prop"
             )
@@ -613,6 +628,64 @@ class StatusFragment : Fragment() {
             "检测失败"
         }
     }
+    private fun hotUpdateModuleFromAssets() {
+        val mainActivity = activity as? MainActivity ?: return
+        
+        if (!mainActivity.hasSuPermission()) {
+            context?.let {
+                android.widget.Toast.makeText(it, "无Root权限，无法热更新模块", android.widget.Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        
+        context?.let {
+            android.widget.Toast.makeText(it, "正在从内置资源安装模块...", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        
+        Thread {
+            try {
+                val tempDir = context?.getDir("temp_module", Context.MODE_PRIVATE) ?: return@Thread
+                val zipFile = File(tempDir, "module.zip")
+                val extractDir = File(tempDir, "extracted")
+                
+                // 清理临时目录
+                tempDir.deleteRecursively()
+                tempDir.mkdirs()
+                extractDir.mkdirs()
+                
+                // 从assets复制ZIP到临时目录
+                context?.assets?.open("module.zip")?.use { input ->
+                    FileOutputStream(zipFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                
+                // 解压ZIP文件
+                extractZipFile(zipFile, extractDir)
+                
+                val success = extractAndCopyModule(Uri.fromFile(zipFile))
+                activity?.runOnUiThread {
+                    if (success) {
+                        android.widget.Toast.makeText(context, "模块安装成功，正在重启服务...", android.widget.Toast.LENGTH_SHORT).show()
+                        
+                        // 重启服务
+                        mainActivity.restartKctrlService()
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            updateStatus()
+                        }, 3000)
+                    } else {
+                        android.widget.Toast.makeText(context, "模块安装失败", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                activity?.runOnUiThread {
+                    android.widget.Toast.makeText(context, "安装出错: ${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+    
     override fun onResume() {
         super.onResume()
         updateStatus()

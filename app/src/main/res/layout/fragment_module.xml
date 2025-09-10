@@ -704,6 +704,104 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- 完全卸载 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFEBEE"
+            app:strokeColor="#F44336"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="完全卸载"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#D32F2F"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚠️ 警告：此操作将完全卸载kctrl模块并卸载本应用，所有配置将丢失！"
+                    android:textSize="14sp"
+                    android:textColor="#BF360C"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_uninstall_all"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="完全卸载"
+                    android:textColor="#FFFFFF"
+                    app:icon="@android:drawable/ic_delete"
+                    app:iconTint="#FFFFFF"
+                    android:backgroundTint="#F44336"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 清理xposedEdge残留 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="#FFEBEE"
+            app:strokeColor="#F44336"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="清理残留文件"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#C62828"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="清理xposedEdge残留配置文件，释放存储空间"
+                    android:textSize="14sp"
+                    android:textColor="#BF360C"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_clean_xposed_edge"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="清理xposedEdge残留"
+                    android:textColor="#FFFFFF"
+                    app:icon="@android:drawable/ic_delete"
+                    app:iconTint="#FFFFFF"
+                    android:backgroundTint="#F44336"
+                    style="@style/Widget.Material3.Button" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- 操作按钮已移除，配置现在会自动保存并立即生效 -->
 
     </LinearLayout>

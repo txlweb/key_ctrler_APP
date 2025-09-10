@@ -176,24 +176,20 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f47d34be-c06b-47dd-877c-8ad6baebcdf3" name="更改" comment="update_first...">
-      <change beforePath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="f47d34be-c06b-47dd-877c-8ad6baebcdf3" name="更改" comment="1.6 fx1 update">
+      <change afterPath="$PROJECT_DIR$/app/src/main/assets/module.zip" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle.kts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/release/baselineProfiles/0/app-release.dm" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/baselineProfiles/0/app-release.dm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/release/baselineProfiles/1/app-release.dm" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/baselineProfiles/1/app-release.dm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/release/output-metadata.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/output-metadata.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ConfigFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ConfigFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowDemoActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowDemoActivity.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowManager.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/FloatingWindowManager.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/assets/funcs.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/assets/funcs.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ModuleFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/ModuleFragment.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/SplashActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/SplashActivity.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/StatusFragment.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/idlike/kctrl/mgr/StatusFragment.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_floating_window_demo.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_floating_window_demo.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_module.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_module.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_status.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_status.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/themes.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/themes.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -278,6 +274,12 @@
       <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\res\drawable" />
       <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\assets" />
       <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\java\com\idlike\kctrl\mgr" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\28089\AndroidStudioProjects\kctrlmgr\app\src\main\assets" />
+    </key>
+    <key name="CopyKotlinDeclarationDialog.RECENTS_KEY">
+      <recent name="com.idlike.kctrl.mgr" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
       <recent name="com.idlike.kctrl.mgr" />
@@ -384,11 +386,20 @@
       <option name="project" value="LOCAL" />
       <updated>1754909482512</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="1.6 fx1 update">
+      <option name="closed" value="true" />
+      <created>1756876026931</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1756876026931</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="update_first..." />
-    <option name="LAST_COMMIT_MESSAGE" value="update_first..." />
+    <MESSAGE value="1.6 fx1 update" />
+    <option name="LAST_COMMIT_MESSAGE" value="1.6 fx1 update" />
   </component>
 </project>

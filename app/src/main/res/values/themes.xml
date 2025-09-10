@@ -38,10 +38,19 @@
     </style>
     
     <!-- 开屏主题 -->
-    <style name="Theme.Splash" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="Theme.Splash" parent="Theme.Material3.DynamicColors.DayNight">
         <!-- 全屏显示 -->
         <item name="android:windowFullscreen">true</item>
         <!-- 透明背景 -->
         <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 隐藏 ActionBar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        
+        <!-- Material You 动态颜色 -->
+        <item name="colorPrimary">@color/dynamic_primary</item>
+        <item name="colorOnPrimary">@color/dynamic_on_primary</item>
+        <item name="colorSurface">@color/dynamic_surface</item>
+        <item name="colorOnSurface">@color/dynamic_on_surface</item>
     </style>
 </resources>
